@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesen — German Reader</title>
+<style>
+:root{--bg:#faf8f4;--ink:#2b2620;--soft:#6f675c;--line:#e5dfd5;--accent:#a33b20;--known:#2b2620;--unk-bg:#fdeac9;--unk-ink:#7a4a00;--card:#fff}
+*{box-sizing:border-box;margin:0}
+body{font:16px/1.6 -apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);padding-bottom:80px}
+header{display:flex;align-items:baseline;gap:16px;padding:18px 24px;border-bottom:1px solid var(--line)}
+h1{font-size:20px;letter-spacing:.5px}
+h1 span{color:var(--accent)}
+nav{margin-left:auto;display:flex;gap:4px}
+nav button{border:0;background:none;font:inherit;padding:6px 14px;border-radius:8px;cursor:pointer;color:var(--soft)}
+nav button.on{background:var(--ink);color:var(--bg)}
+main{max-width:860px;margin:0 auto;padding:24px}
+.tab{display:none}.tab.on{display:block}
+/* reader */
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+select,button.act{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer}
+button.act:hover{border-color:var(--soft)}
+#cov{margin-left:auto;font-size:14px;color:var(--soft)}
+#cov b{color:var(--accent);font-size:16px}
+textarea{width:100%;height:130px;font:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card);resize:vertical}
+#text{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px 26px;font-size:18px;line-height:1.9;margin-top:14px;white-space:pre-wrap}
+#text:empty{display:none}
+#covbar{display:none}
+.sent.hl{background:#fff2d0;border-radius:4px;box-shadow:0 0 0 3px #fff2d0}
+.w{cursor:pointer;border-radius:3px}
+.w:hover{background:#eee5d6}
+.unk{background:var(--unk-bg);color:var(--unk-ink)}
+.soon{border-bottom:1px dashed #b08d4f}
+.saved{border-bottom:2px solid var(--accent)}
+#legend{font-size:12px;color:var(--soft)}
+#legend .lu{background:var(--unk-bg);color:var(--unk-ink);padding:0 5px;border-radius:3px}
+#legend .ls{border-bottom:1px dashed #b08d4f}
+/* warm-up chips */
+.warm{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+.wchip{background:var(--unk-bg);color:var(--unk-ink);border-radius:14px;padding:3px 12px;font-size:13px;line-height:1.5}
+.wchip b{color:#5e3a00}
+/* comprehension */
+#extras{margin-top:14px}
+#extras>details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0 18px}
+#extras>details[open]{padding-bottom:14px}
+#extras summary{cursor:pointer;padding:12px 0;font-weight:600}
+#extras .q{padding:7px 0;border-top:1px solid var(--line)}
+#extras .q details{border:0;background:none;padding:0;margin:4px 0 0}
+#extras .q summary,#extras .gist summary{font-weight:400;font-size:13px;color:var(--accent);padding:0}
+#extras .q details>div,#extras .gist>div{padding:4px 0 2px;color:#3d372f}
+#extras .gist{border:0;background:none;padding:7px 0 0;margin:0;border-top:1px solid var(--line)}
+/* deck position */
+.dp input{font:inherit;width:90px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.dp label{font-size:14px;color:var(--soft);margin-right:4px}
+#pop{position:fixed;max-width:340px;background:var(--ink);color:var(--bg);padding:12px 14px;border-radius:10px;font-size:14px;line-height:1.5;box-shadow:0 6px 24px rgba(0,0,0,.25);display:none;z-index:9}
+#pop .hw{font-size:17px;font-weight:600}
+#pop .pos{opacity:.6;margin-left:6px;font-size:12px}
+#pop .ex{opacity:.75;font-style:italic;margin-top:4px}
+#pop button{margin-top:8px;font:inherit;font-size:13px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:none;color:inherit;cursor:pointer}
+/* today card */
+#today{margin-bottom:14px}
+.trow{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.tdate{font-size:13px;color:var(--soft);text-transform:uppercase;letter-spacing:.6px}
+.tstreak{margin-left:auto;font-size:14px;background:var(--card);border:1px solid var(--line);padding:3px 12px;border-radius:20px;white-space:nowrap}
+.tphase{font-size:14px;color:var(--soft);margin-bottom:10px}
+.tcard{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:16px 18px}
+.tt{font-size:20px;font-weight:600;margin-bottom:3px}
+.tmeta{font-size:14px;color:var(--soft);margin-bottom:13px}
+.tmeta b{color:var(--accent)}
+.tbtn{display:flex;flex-wrap:wrap;gap:8px}
+#more{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:0 16px;margin-bottom:6px}
+#more[open]{padding-bottom:14px}
+#more>summary{cursor:pointer;color:var(--soft);font-size:14px;padding:11px 0;list-style:none}
+#more>summary::-webkit-details-marker{display:none}
+#more>summary::before{content:"＋ ";color:var(--accent)}
+#more[open]>summary::before{content:"− "}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:22px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:20}
+#toast.show{opacity:1}
+/* word list */
+#list{margin-top:20px}
+#list table{width:100%;border-collapse:collapse;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+#list td{padding:6px 12px;border-top:1px solid var(--line)}
+#list td:last-child{text-align:right}
+#list .x{cursor:pointer;color:var(--soft)}
+/* grammar */
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:0 18px}
+summary{cursor:pointer;padding:13px 0;font-weight:600}
+details>div{padding:2px 0 16px;color:#3d372f}
+details table{border-collapse:collapse;margin:8px 0}
+details td,details th{border:1px solid var(--line);padding:4px 12px;font-size:14px;text-align:left}
+details code,#text code{background:#f1ece2;padding:1px 5px;border-radius:4px;font-size:.92em}
+.tip{color:var(--accent);font-weight:600}
+/* plan */
+.phase{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-bottom:14px}
+.phase h3{margin-bottom:2px}
+.phase p{color:var(--soft);font-size:14px;margin-bottom:10px}
+.wk{display:flex;gap:10px;align-items:baseline;padding:3px 0}
+.wk input{accent-color:var(--accent)}
+.wk label{cursor:pointer}
+.wk.done label{color:var(--soft);text-decoration:line-through}
+#prog{font-size:14px;color:var(--soft);margin-bottom:16px}
+small.note{color:var(--soft)}
+/* progress */
+#stats .scards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+#stats .sc{flex:1;min-width:110px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:15px 18px}
+#stats .sn{font-size:28px;font-weight:700;color:var(--accent);line-height:1.1}
+#stats .sl{font-size:13px;color:var(--soft);margin-top:2px}
+.deckbar{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.dbtop{font-size:15px;margin-bottom:9px;overflow:hidden}
+.dbtop span{float:right;color:var(--accent);font-weight:700}
+.dbtrack{height:10px;background:#efe8dc;border-radius:6px;overflow:hidden}
+.dbfill{height:100%;background:var(--accent);border-radius:6px;transition:width .4s}
+.dbnote{font-size:13px;color:var(--soft);margin-top:9px}
+.backup{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header>
+  <h1>Lesen<span>.</span> <small style="font-weight:400;color:var(--soft)">Wien · Dez 2026</small></h1>
+  <nav>
+    <button class="on" data-t="reader">Reader</button>
+    <button data-t="grammar">Grammar</button>
+    <button data-t="plan">Plan</button>
+    <button data-t="progress">Progress</button>
+  </nav>
+</header>
+<main>
+
+<section id="reader" class="tab on">
+  <div id="today"></div>
+  <details id="more">
+    <summary>Read something else — pick from the library or paste your own</summary>
+    <div class="bar" style="margin-top:6px">
+      <select id="lib"><option value="">— library —</option></select>
+      <button class="act" onclick="loadPaste()">Read pasted text</button>
+    </div>
+    <textarea id="paste" placeholder="Paste any German text here — a news article from orf.at, a menu, an email — then click “Read pasted text”. Words not in your 4,214-word deck get highlighted."></textarea>
+  </details>
+  <div class="bar" id="covbar"><button class="act" id="play" onclick="playText()">🔊 Read aloud</button><span id="legend"></span><span id="cov"></span></div>
+  <div id="text"></div>
+  <div id="extras"></div>
+  <div id="list"></div>
+</section>
+
+<section id="grammar" class="tab">
+  <p style="margin-bottom:14px;color:var(--soft)">A decoder's crib — not for producing German, for figuring out what a sentence <em>means</em>. Open whichever trap you just fell into.</p>
+
+  <details open><summary>Case endings: who does what to whom</summary><div>
+    German word order is flexible because the <b>article carries the grammar</b>. Read the article, not the position.
+    <table><tr><th></th><th>masc</th><th>fem</th><th>neut</th><th>plural</th></tr>
+    <tr><td>Subject (nom)</td><td>der / ein</td><td>die / eine</td><td>das / ein</td><td>die</td></tr>
+    <tr><td>Direct obj (acc)</td><td class="tip">den / einen</td><td>die / eine</td><td>das / ein</td><td>die</td></tr>
+    <tr><td>Indirect obj (dat)</td><td class="tip">dem</td><td class="tip">der</td><td class="tip">dem</td><td class="tip">den +n</td></tr>
+    <tr><td>Possession (gen)</td><td>des +s</td><td>der</td><td>des +s</td><td>der</td></tr></table>
+    <code>Den Mann beißt der Hund</code> = the <b>dog</b> bites the man — <code>den</code> marks the victim even in first position. Only masculine visibly distinguishes nom/acc; when in doubt, first noun is usually (not always!) the subject.<br><br>
+    <span class="tip">Dative-only prepositions:</span> aus, bei, mit, nach, seit, von, zu. <span class="tip">Accusative-only:</span> durch, für, gegen, ohne, um. Two-way (an, auf, in, über, unter…): dative = location, accusative = movement toward.
+  </div></details>
+
+  <details><summary>Verb position: bracket structure</summary><div>
+    Main clause: conjugated verb is <b>always slot 2</b>; everything else (infinitive, participle, prefix) piles up at the <b>end</b>. Read slot 2, then jump to the end, then fill in the middle.<br>
+    <code>Ich <b>habe</b> gestern in Wien einen alten Freund <b>getroffen</b>.</code><br><br>
+    Subordinate clause (after dass, weil, obwohl, wenn, der/die/das as relative…): conjugated verb goes to the <b>very end</b>.<br>
+    <code>…, weil ich ihn seit Jahren nicht gesehen <b>habe</b>.</code><br><br>
+    <span class="tip">Reading strategy:</span> when a sentence feels endless, find the verbs at the end first — they're the skeleton.
+  </div></details>
+
+  <details><summary>Separable verbs: the #1 reading trap</summary><div>
+    <code>Der Zug <b>fährt</b> um 8 Uhr in Wien <b>ab</b>.</code> — the verb is <b>abfahren</b> (depart), not fahren. The prefix hides at the end of the clause.<br><br>
+    If a sentence ends in a lone <code>an, auf, aus, ab, ein, mit, nach, vor, zu, zurück, weiter, statt…</code> — glue it onto the main verb and look <b>that</b> word up.<br><br>
+    Common shifts: kommen (come) → <b>an</b>kommen (arrive), <b>bekommen</b> (receive!); stellen (put) → <b>vor</b>stellen (introduce/imagine); hören (hear) → <b>auf</b>hören (stop).
+  </div></details>
+
+  <details><summary>Spotting the past</summary><div>
+    Written German mostly uses <b>Präteritum</b> (simple past) in narration — these forms are worth recognizing on sight:
+    <table><tr><th>infinitive</th><th>Präteritum</th><th>meaning</th></tr>
+    <tr><td>sein</td><td>war</td><td>was</td></tr>
+    <tr><td>haben</td><td>hatte</td><td>had</td></tr>
+    <tr><td>werden</td><td>wurde</td><td>became / was (passive)</td></tr>
+    <tr><td>gehen</td><td>ging</td><td>went</td></tr>
+    <tr><td>kommen</td><td>kam</td><td>came</td></tr>
+    <tr><td>geben</td><td>gab</td><td>gave (es gab = there was)</td></tr>
+    <tr><td>können</td><td>konnte</td><td>could</td></tr>
+    <tr><td>müssen</td><td>musste</td><td>had to</td></tr></table>
+    Perfect tense: <code>ge—t / ge—en</code> at the clause end (gemacht, gesehen). Strip <code>ge-</code> and the ending to find the stem. No <code>ge-</code> on verbs in -ieren (studiert) or with be-, ver-, er- prefixes (verstanden).
+  </div></details>
+
+  <details><summary>werden: three different jobs</summary><div>
+    <table><tr><th>pattern</th><th>meaning</th></tr>
+    <tr><td>werden + <b>adjective/noun</b></td><td>to become — <code>Es wird kalt.</code></td></tr>
+    <tr><td>werden + <b>infinitive</b> (at end)</td><td>future — <code>Ich werde kommen.</code></td></tr>
+    <tr><td>werden + <b>participle</b> (at end)</td><td class="tip">passive — <code>Das Museum wird renoviert.</code> (is being renovated)</td></tr></table>
+    <code>wurde … gebaut</code> = "was built" — extremely common in museum placards and Wikipedia.
+  </div></details>
+
+  <details><summary>Konjunktiv I: news-speak for "allegedly"</summary><div>
+    Journalists use special verb forms to mark <b>reported speech</b> — "he said that…" without repeating "said":<br>
+    <code>Der Minister sagte, es <b>gebe</b> keine Krise. Man <b>habe</b> alles geprüft. Die Lage <b>sei</b> stabil.</code><br><br>
+    <b>sei</b> (=is, reportedly), <b>habe</b> (=has), <b>gebe</b>, <b>könne</b>, <b>müsse</b>, <b>werde</b> — when you see these, the paper is quoting someone, not asserting fact. Don't confuse <code>sei</code> with <code>seit</code> (since).
+  </div></details>
+
+  <details><summary>Konjunktiv II: would / were</summary><div>
+    <b>wäre</b> (would be), <b>hätte</b> (would have), <b>würde</b> + infinitive (would …), <b>könnte</b> (could), <b>müsste</b> (would have to), <b>sollte</b> (should). Umlaut on a past form ≈ hypothetical: <code>Wenn ich Zeit hätte, würde ich bleiben.</code>
+  </div></details>
+
+  <details><summary>The monster in front of the noun (extended participle)</summary><div>
+    German stuffs whole clauses <b>between the article and its noun</b>:<br>
+    <code><b>die</b> im Jahr 1869 eröffnete <b>Staatsoper</b></code> = the State Opera, (which was) opened in 1869.<br><br>
+    <span class="tip">Fix:</span> when an article is followed by something that isn't its noun, skip ahead to the next noun, then read the stuffing as a relative clause. Article … noun first, middle second.
+  </div></details>
+
+  <details><summary>Compound nouns: read right-to-left</summary><div>
+    The <b>last</b> element is the actual thing; everything before it describes it. <code>Weihnachts·markt·stand</code> = a stand, at a market, for Christmas. Linking letters <code>-s-</code>/<code>-n-</code> (Arbeit<b>s</b>zeit, Straße<b>n</b>bahn) belong to neither word — chop and look up the parts. Your 4,214 words unlock tens of thousands of compounds this way.
+  </div></details>
+
+  <details><summary>Little words that flip the sentence</summary><div>
+    <table>
+    <tr><td><b>doch</b></td><td>but / after all / yes-it-is (contradiction)</td></tr>
+    <tr><td><b>zwar … aber</b></td><td>admittedly … but</td></tr>
+    <tr><td><b>allerdings</b></td><td>however</td></tr>
+    <tr><td><b>dennoch / trotzdem</b></td><td>nevertheless</td></tr>
+    <tr><td><b>deshalb / daher / deswegen</b></td><td>therefore</td></tr>
+    <tr><td><b>obwohl</b></td><td>although</td></tr>
+    <tr><td><b>falls</b></td><td>in case</td></tr>
+    <tr><td><b>kaum</b></td><td>hardly</td></tr>
+    <tr><td><b>erst</b></td><td>only/not until — <code>erst um 10</code> = not until 10</td></tr>
+    <tr><td><b>noch nicht / nicht mehr</b></td><td>not yet / no longer</td></tr>
+    <tr><td><b>lassen + inf.</b></td><td>have sth done, or let — <code>lässt bauen</code> = has (it) built</td></tr></table>
+  </div></details>
+
+  <details><summary>Austrian German (for Vienna)</summary><div>
+    Menus and signs use Austrian words: <b>Jänner</b> = Januar · <b>Erdapfel</b> = Kartoffel (potato) · <b>Paradeiser</b> = Tomate · <b>Semmel</b> = Brötchen (roll) · <b>Sackerl</b> = Tüte (bag) · <b>Jause</b> = snack · <b>Melange</b> ≈ cappuccino · <b>Obers/Schlagobers</b> = (whipped) cream · <b>Faschiertes</b> = ground meat · <b>Kassa</b> = Kasse · <b>heuer</b> = this year. Greeting: <b>Grüß Gott / Servus</b>.
+  </div></details>
+</section>
+
+<section id="plan" class="tab">
+  <div id="prog"></div>
+  <div id="phases"></div>
+  <small class="note">Checkboxes save locally in this browser. Weekly minimum that actually works: Anki daily + 3 reading sessions here. Volume beats intensity.</small>
+</section>
+
+<section id="progress" class="tab">
+  <div id="stats"></div>
+</section>
+
+</main>
+<div id="pop"></div>
+<div id="toast"></div>
+
+<script src="vocab.js"></script>
+<script src="texts.js"></script>
+<script>
+/* ---------- word index ---------- */
+const IDX = new Map();
+function reg(form, i){ form=form.toLowerCase().trim(); if(form.length>1 && !IDX.has(form)) IDX.set(form,i); }
+VOCAB.forEach((v,i)=>{
+  let w=v[0].replace(/^(der|die|das)\s+/i,'').replace(/\s*\(.*\)/,'');
+  w.split('/').forEach(p=>reg(p,i));
+  reg(v[0],i);
+  // forms field: "wird; wurde; ist geworden" or "die Frauen"
+  (v[3]||'').split(/[;,]/).forEach(f=>{
+    f=f.replace(/^(der|die|das|ist|hat|sind|ein|eine)\s+/i,'').trim();
+    if(f) reg(f,i);
+  });
+});
+/* function words not stored as standalone deck entries: known, no card (-2) */
+const STOP=new Set('der die das dem den des ein eine einen einem einer eines im am vom zum zur beim ans ins aufs übers unters durchs fürs hinterm überm unterm ich du er sie es wir ihr mich dich ihn uns euch mir dir ihm ihnen mein dein sein unser euer und oder aber denn dass daß wie wo wer was wen wem wessen'.split(' '));
+/* naive de-inflection: try progressively stripped forms */
+const ENDINGS=['ern','eren','sten','este','ster','stes','ten','tem','tes','ter','te','en','em','er','es','st','e','n','s','t'];
+function base(t){
+  if(IDX.has(t)) return IDX.get(t);
+  for(const e of ENDINGS){
+    if(t.length-e.length>=3 && t.endsWith(e)){
+      const stem=t.slice(0,-e.length);
+      if(IDX.has(stem)) return IDX.get(stem);
+      if(IDX.has(stem+'en')) return IDX.get(stem+'en');
+      if(IDX.has(stem+'e')) return IDX.get(stem+'e');
+    }
+  }
+  if(t.startsWith('ge')){ // participle: gemacht -> machen
+    const s=t.slice(2).replace(/(tes|ter|tem|ten|te|t|enes|ener|enem|enen|ene|en)$/,'');
+    if(IDX.has(s+'en')) return IDX.get(s+'en');
+  }
+  // umlaut plural: häuser -> haus
+  const de=t.replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u');
+  if(de!==t){ if(IDX.has(de)) return IDX.get(de);
+    for(const e of ENDINGS){ if(de.length-e.length>=3&&de.endsWith(e)&&IDX.has(de.slice(0,-e.length))) return IDX.get(de.slice(0,-e.length)); } }
+  return -1;
+}
+function lookup(tok){
+  const t=tok.toLowerCase();
+  if(STOP.has(t)) return -2;
+  const b=base(t); if(b>=0) return b;
+  // compound: Stadtzentrum = Stadt + Zentrum; entlanggeht = entlang + geht
+  if(t.length>=7) for(let c=3;c<=t.length-3;c++){
+    let L=t.slice(0,c), R=t.slice(c);
+    if(base(R)<0) continue;
+    if(base(L)>=0) return base(R);              // gloss the head/last part
+    if(/[sn]$/.test(L)&&base(L.slice(0,-1))>=0) return base(R); // linking -s-/-n-
+  }
+  return -1;
+}
+
+/* ---------- reader ---------- */
+const $=s=>document.querySelector(s);
+let saved=JSON.parse(localStorage.getItem('gr_saved')||'{}');
+let stats=JSON.parse(localStorage.getItem('gr_stats')||'{}'); stats.deckSeen=stats.deckSeen||{};
+
+function render(txt){
+  stopText();
+  const el=$('#text'); el.innerHTML=''; let known=0,soon=0,total=0;
+  (txt.match(/[^.!?\n]+[.!?"”»«]*|\n+/g)||[txt]).forEach((sent,si)=>{
+    const box=document.createElement('span'); box.className='sent'; box.dataset.k=si;
+    sent.split(/([A-Za-zÄÖÜäöüß]+)/).forEach(part=>{
+      if(/^[A-Za-zÄÖÜäöüß]+$/.test(part)&&part.length>1){
+        total++;
+        const i=lookup(part), s=document.createElement('span');
+        s.textContent=part; s.className='w'; s.dataset.i=i; s.dataset.tok=part;
+        if(i===-1) s.classList.add('unk');
+        else if(i>=0&&i>=SC){ soon++; s.classList.add('soon'); stats.deckSeen[i]=1; }
+        else { known++; if(i>=0) stats.deckSeen[i]=1; }
+        if(saved[part.toLowerCase()]) s.classList.add('saved');
+        box.appendChild(s);
+      } else box.appendChild(document.createTextNode(part));
+    });
+    el.appendChild(box);
+  });
+  localStorage.setItem('gr_stats',JSON.stringify(stats));
+  $('#cov').innerHTML=total?`<b>${Math.round(100*known/total)}%</b> studied vocab · ${soon} coming up in your deck · ${total-known-soon} outside it`:'';
+  $('#legend').innerHTML='<span class="lu">highlight</span> = not in deck · <span class="ls">dashed</span> = in deck, not studied yet';
+  $('#covbar').style.display='flex';
+  $('#covbar').scrollIntoView({block:'start',behavior:'smooth'});
+  drawStats();
+  return total;
+}
+function countRead(key,total){
+  const ds=dstr(new Date());
+  if(!stats.log||stats.log.date!==ds) stats.log={date:ds,keys:{}};
+  if(stats.log.keys[key]) return;
+  stats.log.keys[key]=1; stats.wordsRead=(stats.wordsRead||0)+total;
+  localStorage.setItem('gr_stats',JSON.stringify(stats)); drawStats();
+}
+function loadPaste(){ const t=$('#paste').value.trim(); if(!t)return; $('#extras').innerHTML=''; countRead('p'+hashStr(t.slice(0,200)),render(t)); }
+
+$('#text').addEventListener('click',e=>{
+  const s=e.target.closest('.w'); if(!s) return;
+  const i=+s.dataset.i, tok=s.dataset.tok, pop=$('#pop');
+  let html;
+  if(i>=0){ const v=VOCAB[i];
+    html=`<span class="hw">${v[0]}</span><span class="pos">${v[2]||''} · top ${v[5]*25}</span><div>${v[1]}</div>`+
+      (v[3]?`<div class="pos">${v[3]}</div>`:'')+(v[4]?`<div class="ex">${v[4]}</div>`:'');
+  } else html=`<span class="hw">${tok}</span><div class="pos">${i===-2?'function word (article / pronoun / conjunction)':'not in your deck'}</div>`;
+  const esc=tok.replace(/'/g,"\\'");
+  html+=`<button onclick="save('${esc}',${i})">＋ save</button> <button onclick="speak('${esc}')">🔊 hear</button>`;
+  const sentTxt=(s.closest('.sent')||{}).textContent;
+  if(sentTxt&&sentTxt.trim().length>3) html+=` <button onclick="window.open('https://translate.google.com/?sl=de&tl=en&text='+encodeURIComponent(this.dataset.s),'_blank')" data-s="${sentTxt.trim().replace(/"/g,'&quot;')}">↗ sentence</button>`;
+  pop.innerHTML=html; pop.style.display='block';
+  const r=s.getBoundingClientRect();
+  pop.style.left=Math.min(r.left,innerWidth-360)+'px';
+  pop.style.top=(r.bottom+8)+'px';
+});
+document.addEventListener('click',e=>{ if(!e.target.closest('.w')&&!e.target.closest('#pop')) $('#pop').style.display='none'; });
+
+function save(tok,i){
+  saved[tok.toLowerCase()]={w:i>=0?VOCAB[i][0]:tok, g:i>=0?VOCAB[i][1]:''};
+  localStorage.setItem('gr_saved',JSON.stringify(saved));
+  document.querySelectorAll('.w').forEach(s=>{ if(s.dataset.tok.toLowerCase()===tok.toLowerCase()) s.classList.add('saved'); });
+  $('#pop').style.display='none'; drawList();
+}
+function unsave(k){ delete saved[k]; localStorage.setItem('gr_saved',JSON.stringify(saved)); drawList(); }
+function drawList(){
+  const ks=Object.keys(saved), el=$('#list');
+  if(!ks.length){ el.innerHTML=''; return; }
+  el.innerHTML=`<div class="bar"><b>Word list (${ks.length})</b><button class="act" onclick="copyTSV()">Copy as Anki TSV</button></div>
+  <table>${ks.map(k=>`<tr><td><b>${saved[k].w}</b></td><td>${saved[k].g||'<i>look up & fill in</i>'}</td><td class="x" onclick="unsave('${k}')">✕</td></tr>`).join('')}</table>`;
+}
+function copyTSV(){
+  navigator.clipboard.writeText(Object.values(saved).map(v=>v.w+'\t'+v.g).join('\n'));
+  alert('Copied — in Anki: File → Import, fields separated by Tab.');
+}
+
+/* ---------- library ---------- */
+const LIB=[
+["A2 · Ankunft in Wien",`Wir kommen am Abend in Wien an. Der Zug ist pünktlich. Am Bahnhof kaufen wir zwei Tickets für die U-Bahn und fahren ins Zentrum. Unser Hotel liegt in der Nähe vom Stephansdom. Das Zimmer ist klein, aber warm, und vom Fenster sehen wir die Lichter der Stadt.
+Es ist Dezember und sehr kalt. Auf den Straßen riecht es nach Punsch und gebrannten Mandeln. Überall stehen kleine Stände aus Holz. Eine Frau verkauft heiße Maroni. „Zwei Euro, bitte“, sagt sie und lächelt.
+Wir haben Hunger. In einem kleinen Restaurant essen wir Schnitzel mit Kartoffelsalat. Es schmeckt wunderbar. Danach gehen wir noch durch die Altstadt. Morgen wollen wir das Schloss Schönbrunn besuchen. Aber jetzt sind wir müde. Der erste Tag in Wien war schön.`],
+["A2 · Im Kaffeehaus",`In Wien gibt es viele alte Kaffeehäuser. Die Menschen sitzen dort oft stundenlang. Sie lesen die Zeitung, arbeiten oder sprechen mit Freunden. Niemand muss schnell gehen. Der Kellner bringt das Wasser immer ohne Frage — das ist Tradition.
+Ich bestelle eine Melange. Das ist ein Kaffee mit viel Milch. Dazu nehme ich ein Stück Apfelstrudel mit Sahne. Der Kellner trägt einen schwarzen Anzug und sieht sehr elegant aus.
+Am Tisch neben mir sitzt ein alter Mann. Er kommt jeden Tag hierher, erzählt er mir. Seit vierzig Jahren! „Das Kaffeehaus ist mein zweites Wohnzimmer“, sagt er. „Zu Hause ist es mir zu still.“
+Draußen beginnt es zu schneien. Ich bleibe noch eine Stunde und schaue durch das große Fenster auf die Straße.`],
+["B1 · Der Christkindlmarkt",`Der Wiener Christkindlmarkt vor dem Rathaus gehört zu den größten Weihnachtsmärkten Europas. Jedes Jahr besuchen ihn mehr als drei Millionen Menschen. Schon Mitte November werden die ersten Stände aufgebaut, und ab dem ersten Adventwochenende drängen sich die Besucher zwischen Punschständen und Handwerksbuden.
+Die Geschichte des Marktes reicht weit zurück: Bereits im Jahr 1298 erlaubte der Herzog den Wienern, einen Dezembermarkt abzuhalten. Damals verkaufte man vor allem Fleisch und Brot, später kamen Spielzeug und Süßigkeiten dazu.
+Wer den Massen entgehen will, sollte am Vormittag kommen oder auf kleinere Märkte ausweichen, zum Beispiel am Spittelberg oder vor dem Schloss Belvedere. Dort geht es ruhiger zu, und viele Wiener sagen, der Punsch schmecke dort auch besser. Ob das stimmt, muss jeder selbst herausfinden — am besten mit einer Tasse in der Hand, während über dem Rathaus die Lichter angehen.`],
+["B1 · Die Ringstraße",`Wenn man Wien verstehen will, sollte man einmal die Ringstraße entlanggehen. Diese breite Straße umschließt die Innenstadt wie ein Gürtel. Wo sie heute verläuft, standen früher die Stadtmauern. Kaiser Franz Joseph ließ sie 1857 abreißen, weil die wachsende Stadt mehr Platz brauchte.
+In den folgenden Jahrzehnten entstanden hier die wichtigsten Gebäude des Landes: die Oper, das Parlament, das Rathaus, die Universität und zwei große Museen. Jedes Gebäude wurde in einem anderen historischen Stil gebaut — das Parlament sieht aus wie ein griechischer Tempel, das Rathaus wie eine gotische Kirche.
+Heute fahren Straßenbahnen um den Ring, und wer wenig Zeit hat, kann die ganze Pracht vom Fenster der Linie 1 aus betrachten. Im Dezember lohnt sich der Weg besonders am Abend, wenn die Gebäude beleuchtet sind und vor dem Rathaus der Eislaufplatz öffnet.`],
+["B1+ · Warum die Wiener so grantig sind",`Die Wiener gelten als unfreundlich — „grantig“, wie man hier sagt. Wer im Kaffeehaus einen Kellner nach der Karte fragt, bekommt manchmal nur ein Seufzen als Antwort. Touristen sind davon oft irritiert, doch die Wiener selbst sehen das anders: Der Grant sei keine schlechte Laune, sondern eine Lebenshaltung, fast eine Kunstform.
+Tatsächlich steckt dahinter eine gewisse Ehrlichkeit. Während man anderswo Freundlichkeit vortäuscht, zeigt der Wiener offen, dass ihn die Welt anstrengt. Gleichzeitig, so behaupten viele, sei unter der rauen Oberfläche ein warmes Herz verborgen. Wer den Grant nicht persönlich nimmt, sondern mit Humor darauf reagiert, hat schnell gewonnen.
+Eine Studie kürte Wien mehrmals zur unfreundlichsten Stadt Europas — im selben Jahr, in dem sie zum wiederholten Mal zur lebenswertesten Stadt der Welt erklärt wurde. Die Wiener nahmen beide Ergebnisse mit demselben Gesicht zur Kenntnis: einem leichten, fast zufriedenen Stirnrunzeln.`],
+["B1+ · Das Riesenrad",`Kaum ein Bauwerk steht so sehr für Wien wie das Riesenrad im Prater. Es wurde 1897 zum fünfzigjährigen Thronjubiläum des Kaisers errichtet und war damals eines der größten Räder der Welt. Eigentlich sollte es nur wenige Jahre stehen bleiben — doch die Wiener hatten es längst ins Herz geschlossen.
+Seine Geschichte ist auch die Geschichte der Stadt. Im Zweiten Weltkrieg brannte es aus und wurde von Bomben schwer beschädigt. Dass man es nach 1945, als halb Wien in Trümmern lag, trotzdem wieder aufbaute, verstanden viele als Zeichen: Die Stadt lebt weiter.
+Eine Fahrt dauert ungefähr zwanzig Minuten. Die alten roten Waggons heben sich langsam über die Dächer, und bei klarem Wetter reicht der Blick bis zu den Hügeln des Wienerwaldes. Im Winter, wenn unten die Lichter des Weihnachtsmarkts glitzern, ist die Aussicht vielleicht am schönsten — vorausgesetzt, man hat sich vorher einen heißen Punsch geholt.`],
+["B2 · Kaffeehauskultur als Welterbe",`Die Wiener Kaffeehauskultur wurde 2011 von der UNESCO in das Verzeichnis des immateriellen Kulturerbes aufgenommen — eine Auszeichnung, die weniger dem Getränk als einer bestimmten Form des Zeitvertreibs gilt. Das Kaffeehaus, so heißt es in der Begründung, sei ein Ort, „an dem Zeit und Raum konsumiert werden, aber nur der Kaffee auf der Rechnung steht“.
+Um 1900 waren die Kaffeehäuser das Wohnzimmer der Wiener Intelligenz. Schriftsteller wie Peter Altenberg oder Karl Kraus verbrachten dort ganze Tage, lasen die ausliegenden Zeitungen, schrieben, stritten. Manche ließen sich sogar ihre Post ins Kaffeehaus schicken. Wer die Miete für eine warme Wohnung nicht aufbringen konnte, saß für den Preis eines kleinen Braunen im Warmen.
+Von dieser Welt ist erstaunlich viel geblieben. Zwar klappern heute Laptops statt Schreibmaschinen, doch das Grundprinzip gilt noch immer: Wer bestellt hat, darf bleiben, so lange er will. Der Kellner — traditionell „Herr Ober“ genannt — wird niemanden drängen. Eile wäre ein Stilbruch, und Stil nimmt man hier ernst.`],
+["B2 · Ein Haus gegen die gerade Linie",`Wer vom Stadtzentrum aus die Löwengasse entlanggeht, steht plötzlich vor einem Haus, das aussieht, als hätte ein Kind es gemalt: schiefe Böden, bunte Fassaden, goldene Zwiebeltürme, Bäume, die aus den Fenstern wachsen. Das Hundertwasserhaus, zwischen 1983 und 1985 errichtet, ist der gebaute Protest des Künstlers Friedensreich Hundertwasser gegen die moderne Architektur.
+Hundertwasser hielt die gerade Linie für „gottlos“ und den grauen Wohnblock für eine Krankheit, an der die Menschen seelisch zugrunde gingen. In seinem Haus sollte jeder Bewohner das Recht haben, die Fassade rund um sein Fenster selbst zu gestalten — so weit der Arm reicht. Die Bäume, die er auf Dächer und in Zimmer pflanzen ließ, bezeichnete er als „Baummieter“: Sie zahlen ihre Miete, indem sie Sauerstoff produzieren.
+Die Architekturkritik war gespalten; manche warfen ihm vor, bloße Kulisse zu bauen. Die Wiener aber, sonst mit Begeisterung sparsam, machten das Haus binnen weniger Jahre zu einer der meistbesuchten Sehenswürdigkeiten der Stadt. Besichtigen kann man es nur von außen — es ist bis heute bewohnt.`],
+["A2 · Frühstück im Hotel",`Am Morgen gehen wir zum Frühstück. Der Speisesaal ist groß und hell. Auf dem Tisch stehen frische Semmeln, Butter, Marmelade und Käse. Ich nehme ein weiches Ei und ein Glas Orangensaft. Meine Freundin trinkt einen großen Kaffee mit Milch.
+Am Fenster sitzt eine ältere Dame. Sie liest die Zeitung und isst langsam ein Stück Kuchen. Der Kellner fragt: „Möchten Sie noch etwas?“ „Nein danke“, sagt sie freundlich.
+Draußen ist es kalt und grau. Vielleicht schneit es später. Nach dem Frühstück wollen wir in die Stadt gehen. Zuerst brauche ich aber noch einen zweiten Kaffee. Der Morgen darf ruhig ein bisschen länger dauern. Wir haben ja Urlaub.`],
+["A2 · Mit der U-Bahn durch die Stadt",`Die U-Bahn in Wien ist schnell und sauber. Es gibt fünf Linien mit verschiedenen Farben. Wir kaufen eine Karte für 24 Stunden. Damit können wir so oft fahren, wie wir wollen.
+An der Station Stephansplatz steigen wir aus. Viele Menschen warten schon auf dem Bahnsteig. Ein Zug kommt alle paar Minuten. „Bitte einsteigen und die Türen schließen“, sagt eine Stimme.
+Im Zug ist es warm. Ein junger Mann hört leise Musik, eine Frau liest ein Buch. Wir fahren drei Stationen und steigen dann um. Die U-Bahn bringt uns fast überall hin. Nur zum Schloss Schönbrunn müssen wir am Ende noch ein kleines Stück zu Fuß gehen. Aber das macht nichts, denn das Wetter ist heute besser.`],
+["A2 · Am Naschmarkt",`Der Naschmarkt ist der bekannteste Markt in Wien. Hier gibt es fast alles: Obst, Gemüse, Käse, Oliven und frisches Brot. Die Händler rufen laut und zeigen ihre Waren. Überall riecht es nach Gewürzen und warmem Essen.
+Wir gehen langsam von Stand zu Stand. Eine Frau gibt uns ein Stück Käse zum Probieren. „Aus Österreich“, sagt sie stolz. Der Käse schmeckt sehr gut, also kaufen wir ein kleines Stück.
+An einem anderen Stand essen wir zu Mittag. Es gibt Suppe und Brot. Neben uns sprechen zwei Männer laut über Fußball. Am Ende des Marktes kaufen wir noch frische Äpfel für den Nachmittag. Der Naschmarkt ist voll und laut, aber wir kommen gerne wieder.`],
+["A2 · Eine Postkarte nach Hause",`Liebe Mama, liebe Oma,
+viele Grüße aus Wien! Die Stadt ist wunderschön, besonders jetzt im Dezember. Überall gibt es Lichter und kleine Weihnachtsmärkte. Gestern waren wir im Schloss Schönbrunn. Es hat mehr als tausend Zimmer, aber man darf nur einige davon sehen.
+Das Essen hier ist sehr gut. Ich habe schon Schnitzel, Strudel und natürlich Sachertorte probiert. Der Kaffee ist auch toll. Man sitzt stundenlang im Kaffeehaus und niemand sagt etwas.
+Das Wetter ist kalt, aber wir haben warme Jacken dabei. Morgen fahren wir mit dem Riesenrad. Ich mache viele Fotos und zeige sie euch bald. Ich vermisse euch sehr. Bis nächste Woche!
+Alles Liebe, Anna`],
+["B1 · Kaiserin Sisi",`Kaum eine Figur der österreichischen Geschichte ist so berühmt wie Kaiserin Elisabeth, die alle nur „Sisi“ nennen. Mit sechzehn Jahren heiratete sie Kaiser Franz Joseph und wurde damit zur mächtigsten Frau des Reiches. Doch das strenge Leben am Hof machte sie nicht glücklich.
+Sisi liebte die Freiheit. Sie reiste viel, oft allein, und blieb selten lange in Wien. Sie achtete streng auf ihre Figur, ritt leidenschaftlich und schrieb Gedichte. Viele Menschen bewunderten ihre Schönheit, aber nur wenige kannten die traurige Frau dahinter.
+1898 wurde sie in Genf von einem Attentäter getötet. Ihr Tod erschütterte ganz Europa. Heute erinnern Filme, Bücher und ein eigenes Museum an sie. Für viele Touristen ist Sisi bis heute das romantische Gesicht des alten Österreich — auch wenn ihr wahres Leben alles andere als ein Märchen war.`],
+["B1 · Mozart in Wien",`Wolfgang Amadeus Mozart wurde in Salzburg geboren, aber die wichtigsten Jahre seines Lebens verbrachte er in Wien. 1781 zog er in die Hauptstadt, weil er dort mehr Freiheit und bessere Möglichkeiten sah. In Wien schrieb er einige seiner berühmtesten Werke.
+Mozart war ein Star seiner Zeit. Er gab Konzerte, unterrichtete Schüler und verdiente zeitweise viel Geld. Trotzdem hatte er oft Schulden, denn er gab genauso schnell aus, wie er einnahm. Sein Leben war ein ständiges Auf und Ab.
+Als er 1791 mit nur 35 Jahren starb, wurde er in einem einfachen Grab beerdigt. Bis heute weiß niemand genau, wo es liegt. Doch seine Musik lebt weiter: In Wien kann man sie in vielen Konzerten hören, und an fast jeder Ecke verkaufen Geschäfte die runden „Mozartkugeln“ aus Schokolade.`],
+["B1 · Der Stephansdom",`Mitten in Wien steht der Stephansdom, das wichtigste Wahrzeichen der Stadt. Die Wiener nennen ihn liebevoll „Steffl“. Sein hoher Südturm misst 136 Meter, und wer die vielen Stufen nach oben steigt, wird mit einem großartigen Blick über die Dächer belohnt.
+Der Bau der Kirche dauerte mehrere Jahrhunderte. Besonders auffällig ist das bunte Dach mit seinen glänzenden Ziegeln, die ein großes Muster bilden. Im Inneren ist es kühl und still, auch wenn draußen tausende Touristen vorbeigehen.
+Im Zweiten Weltkrieg brannte der Dom und wurde schwer beschädigt. Nach dem Krieg half ganz Österreich beim Wiederaufbau — fast jedes Bundesland übernahm einen Teil. So wurde der Steffl zu einem Symbol für den Neuanfang des Landes. Heute läutet seine große Glocke, die „Pummerin“, jedes Jahr das neue Jahr ein.`],
+["B1 · Der Streit um die Sachertorte",`Die Sachertorte ist vielleicht die berühmteste Torte der Welt. Franz Sacher erfand sie 1832 als junger Koch. Die dunkle Schokoladentorte mit einer dünnen Schicht Marillenmarmelade wurde schnell beliebt.
+Doch um die Torte gab es einen langen Streit. Zwei Häuser behaupteten, die einzig „echte“ Sachertorte zu verkaufen: das Hotel Sacher und die berühmte Konditorei Demel. Der Streit ging sogar vor Gericht und dauerte viele Jahre. Am Ende durfte nur das Hotel Sacher seine Torte „Original Sacher-Torte“ nennen.
+Heute kann man die Torte in ganz Wien essen, meist mit einem Klecks Schlagobers dazu. Manche Touristen finden sie ein wenig trocken — doch das gehört dazu, denn dafür trinkt man einen starken Kaffee. Wer die Torte nach Hause schicken will, bekommt sie sogar in einer hübschen Holzkiste.`],
+["B1 · Silvester in Wien",`In Wien wird der letzte Tag des Jahres groß gefeiert. Schon am Nachmittag füllen sich die Straßen der Innenstadt. Auf dem sogenannten „Silvesterpfad“ gibt es Musik, Essen und Punsch an vielen Plätzen. Tausende Menschen, Einheimische wie Touristen, ziehen von Bühne zu Bühne.
+Um Mitternacht läutet die große Glocke des Stephansdoms, die Pummerin. Dann tanzen überall Paare den Donauwalzer — eine alte Wiener Tradition. Am Himmel leuchtet ein Feuerwerk, und fremde Menschen wünschen einander ein „gutes neues Jahr“.
+Viele Wiener schauen am Abend außerdem im Fernsehen die Operette „Die Fledermaus“ oder hören am nächsten Morgen das berühmte Neujahrskonzert der Wiener Philharmoniker. Es wird in über neunzig Länder übertragen. So beginnt das Jahr in Wien immer mit Musik — und meistens auch mit etwas Müdigkeit nach der langen Nacht.`],
+["B1 · Schloss Schönbrunn",`Schloss Schönbrunn war die Sommerresidenz der Kaiserfamilie und ist heute die meistbesuchte Sehenswürdigkeit Österreichs. Das riesige gelbe Gebäude hat mehr als tausend Zimmer, von denen man einige besichtigen kann. Hier lebte auch Kaiserin Maria Theresia mit ihren sechzehn Kindern.
+Besonders schön ist der große Park hinter dem Schloss. Im Sommer blühen dort tausende Blumen, im Winter liegt oft Schnee auf den langen Wegen. Auf einem Hügel steht die „Gloriette“, von der man einen weiten Blick über die ganze Stadt hat.
+Im Park befindet sich außerdem der älteste noch bestehende Zoo der Welt. Er wurde 1752 gegründet. Kinder lieben besonders die Pandabären. Wer alles sehen will, braucht einen ganzen Tag — und im Dezember lohnt sich der Besuch besonders, denn dann steht vor dem Schloss ein stimmungsvoller Weihnachtsmarkt.`],
+["B1+ · Warum Wien lebenswert ist",`Seit Jahren landet Wien regelmäßig auf dem ersten Platz, wenn internationale Studien die lebenswertesten Städte der Welt küren. Doch was macht das Leben hier so angenehm? Ein wichtiger Grund ist der Wohnungsmarkt. Rund sechzig Prozent der Wiener leben in geförderten Wohnungen, deren Mieten deutlich niedriger sind als in anderen Großstädten.
+Dazu kommt ein hervorragendes öffentliches Verkehrsnetz. Für nur einen Euro pro Tag — 365 Euro im Jahr — kann man alle U-Bahnen, Straßenbahnen und Busse nutzen. Ein eigenes Auto braucht in Wien kaum jemand.
+Auch die vielen Parks, die saubere Luft und das sichere Umfeld tragen zum guten Ruf bei. Kritiker weisen allerdings darauf hin, dass solche Ranglisten vor allem die Bedürfnisse gut verdienender Menschen messen. Für die Wiener selbst zählt am Ende ohnehin etwas anderes: dass man in Ruhe seinen Kaffee trinken kann, ohne gestört zu werden.`],
+["B1+ · Klimt und der Kuss",`Gustav Klimt gilt als der berühmteste Maler Österreichs. Sein bekanntestes Werk, „Der Kuss“, hängt im Schloss Belvedere und zieht jedes Jahr unzählige Besucher an. Das Bild zeigt ein Liebespaar, das ganz in Gold gehüllt zu sein scheint.
+Klimt malte um 1900, in einer Zeit, in der Wien ein Zentrum der Kunst und der neuen Ideen war. Seine Bilder waren damals umstritten. Manche fanden sie zu freizügig, andere feierten ihn als Genie. Er selbst kümmerte sich wenig um die Meinung der Kritiker und ging seinen eigenen Weg.
+Charakteristisch für Klimt ist die Verwendung von echtem Blattgold, das seine Werke schimmern lässt. Wer heute vor dem „Kuss“ steht, versteht schnell, warum das Bild so berühmt wurde: Es wirkt gleichzeitig modern und zeitlos. Reproduktionen findet man in Wien auf Tassen, Schals und Postkarten an fast jeder Ecke.`],
+["B1+ · Der Wiener Dialekt",`Wer Hochdeutsch gelernt hat und zum ersten Mal nach Wien kommt, erlebt oft eine Überraschung: Der Wiener Dialekt klingt ganz anders. Schon die Begrüßung ist ungewohnt. Statt „Guten Tag“ hört man „Grüß Gott“, und unter Freunden sagt man einfach „Servus“.
+Viele Wörter unterscheiden sich vom Deutschen, das man in Deutschland spricht. Die Kartoffel heißt „Erdapfel“, die Tomate „Paradeiser“ und die Tüte „Sackerl“. Auch die Aussprache ist weicher und melodischer. Manche Sätze enden fast wie eine Frage, selbst wenn sie gar keine sind.
+Für Lernende ist das anfangs verwirrend, aber kein Grund zur Sorge. Fast alle Wiener verstehen Hochdeutsch problemlos und wechseln höflich, wenn sie merken, dass jemand aus dem Ausland kommt. Wer trotzdem ein paar typische Wörter lernt, wird schnell mit einem Lächeln belohnt — denn nichts freut die Wiener mehr, als wenn ein Fremder „Grüß Gott“ sagt.`],
+["B1+ · Das Schnitzel und sein Ursprung",`Das Wiener Schnitzel ist das bekannteste Gericht Österreichs: ein dünnes Stück Kalbfleisch, paniert und goldbraun gebraten. Traditionell wird es mit Kartoffelsalat oder Petersilienkartoffeln serviert, dazu eine Scheibe Zitrone.
+Doch woher kommt das Schnitzel eigentlich? Eine beliebte Geschichte behauptet, ein General habe es im 19. Jahrhundert aus Mailand nach Wien gebracht. Historiker bezweifeln diese Erzählung heute allerdings stark, denn es gibt keine Belege dafür. Wahrscheinlich entstand das panierte Fleisch unabhängig an mehreren Orten.
+Wichtig ist den Wienern vor allem eine Regel: Ein echtes Wiener Schnitzel ist immer aus Kalbfleisch. Wird stattdessen Schwein verwendet, muss es „Schnitzel Wiener Art“ heißen — sonst droht sogar Ärger mit dem Gesetz. Und noch ein Zeichen für gute Qualität: Das Schnitzel sollte so groß sein, dass es über den Tellerrand hinausragt.`],
+["B1+ · Falco und der Austropop",`In den 1980er Jahren wurde ein Wiener Musiker weltberühmt: Falco. Mit seinem Lied „Rock Me Amadeus“ schaffte er es als bisher einziger österreichischer Künstler an die Spitze der amerikanischen Charts. Der Song verbindet moderne Popmusik mit der Figur Mozarts — typisch für Falcos Mischung aus Ernst und Ironie.
+Falco sang meist auf Deutsch, oft im Wiener Dialekt, und wurde damit zum bekanntesten Vertreter des sogenannten „Austropop“. Diese Musikrichtung entstand in den 1970er Jahren, als österreichische Musiker begannen, bewusst in ihrer eigenen Sprache und über ihr eigenes Land zu singen, statt nur englische Vorbilder zu kopieren.
+1998 starb Falco bei einem Autounfall. Sein früher Tod machte ihn endgültig zur Legende. Bis heute kennt in Österreich fast jeder seine Lieder, und viele junge Bands berufen sich auf ihn. Der Austropop lebt weiter — mal nachdenklich, mal frech, aber immer unverwechselbar wienerisch.`],
+["B2 · Freud und die Geburt der Psychoanalyse",`Kaum ein Denker hat das Bild des Menschen so verändert wie Sigmund Freud, der den größten Teil seines Lebens in Wien verbrachte. In seiner Praxis in der Berggasse 19 entwickelte er um 1900 eine völlig neue Vorstellung von der menschlichen Seele. Nicht die Vernunft, so seine These, bestimme unser Handeln, sondern vor allem unbewusste Wünsche und verdrängte Erinnerungen.
+Freud ließ seine Patienten auf einer Couch liegen und einfach frei erzählen, was ihnen in den Sinn kam. Aus scheinbar zufälligen Gedanken, Versprechern und Träumen versuchte er, das Verborgene ans Licht zu holen. Seine Methode nannte er Psychoanalyse.
+Viele Zeitgenossen reagierten mit Empörung, besonders auf Freuds Betonung der Sexualität. Dennoch verbreiteten sich seine Ideen rasch über die ganze Welt. Als die Nationalsozialisten Österreich besetzten, musste Freud, der Jude war, 1938 nach London fliehen. Sein Wohnhaus in Wien ist heute ein Museum — und der Begriff „Freud'scher Versprecher“ ist längst in die Alltagssprache eingegangen.`],
+["B2 · Wien um 1900",`Um die Wende zum 20. Jahrhundert war Wien einer der aufregendsten Orte Europas. Die Stadt war die Hauptstadt eines riesigen Vielvölkerreiches, und in ihren Kaffeehäusern und Salons trafen Denker, Künstler und Wissenschaftler aufeinander, die das moderne Denken prägen sollten.
+In dieser kurzen, glänzenden Epoche entstand Erstaunliches: Sigmund Freud erforschte das Unbewusste, Gustav Klimt und die Künstler der „Secession“ brachen mit der alten Malerei, und Komponisten wie Gustav Mahler und Arnold Schönberg sprengten die Grenzen der Musik. Gleichzeitig schrieben Autoren wie Arthur Schnitzler und Karl Kraus scharfsinnig über die Widersprüche ihrer Gesellschaft.
+Doch hinter der kulturellen Blüte wuchsen auch Spannungen. Nationalismus und Antisemitismus nahmen zu, und das alte Reich stand vor dem Zerfall. Wenige Jahre später zerstörte der Erste Weltkrieg diese Welt für immer. Gerade weil sie so plötzlich unterging, übt das Wien um 1900 bis heute eine besondere Faszination aus.`],
+["B2 · Der Wiener Gemeindebau",`Wer durch Wien spaziert, entdeckt immer wieder große Wohnhäuser mit begrünten Innenhöfen und der Aufschrift „Errichtet von der Gemeinde Wien“. Diese Bauten sind das Ergebnis einer Politik, die vor über hundert Jahren begann und die Stadt bis heute prägt.
+Nach dem Ersten Weltkrieg herrschte in Wien bittere Wohnungsnot. Die damalige Stadtregierung beschloss, mit öffentlichem Geld Tausende von Wohnungen zu bauen und sie zu niedrigen Mieten an einfache Arbeiter zu vergeben. Der bekannteste dieser Bauten, der Karl-Marx-Hof, ist über einen Kilometer lang und galt als Vorbild für ganz Europa.
+Bis heute lebt ein großer Teil der Wiener in solchen geförderten Wohnungen. Anders als in vielen anderen Städten gilt eine Gemeindewohnung nicht als Zeichen von Armut, sondern als etwas ganz Normales. Fachleute sehen darin einen wichtigen Grund dafür, dass Wohnen in Wien vergleichsweise bezahlbar geblieben ist — und dass die soziale Kluft weniger sichtbar wird als anderswo.`],
+["B2 · Die Angst vor dem Coffee to go",`Im Wiener Kaffeehaus gilt eine ungeschriebene Regel: Zeit spielt keine Rolle. Man bestellt einen Kaffee, bekommt ein Glas Wasser dazu und darf bleiben, so lange man möchte — lesend, schreibend oder einfach nur beobachtend. Genau diese Langsamkeit sehen manche heute in Gefahr.
+Der Grund heißt „Coffee to go“. Der Kaffee im Pappbecher, den man im Gehen trinkt, passt schlecht zur Wiener Tradition. Für viele ältere Wiener ist er geradezu ein Symbol für alles, was sie an der modernen Welt stört: Hektik, Oberflächlichkeit und den Verlust echter Muße. Ein Kaffee, so sagen sie, gehöre auf einen Tisch, nicht in eine Hand auf der Straße.
+Doch die Wirklichkeit ist komplizierter. Auch in Wien haben junge Menschen wenig Zeit, und die Ketten mit den bunten Bechern sind längst da. Vielleicht liegt die Zukunft in einem Nebeneinander: der schnelle Becher für den Alltag, das alte Kaffeehaus für die Momente, in denen man sich bewusst Zeit nehmen will — und sei es aus Trotz gegen die eigene Eile.`],
+["B2 · Krampus, der dunkle Begleiter",`Während Kinder in vielen Ländern im Dezember nur auf den freundlichen Nikolaus warten, kennt man in Österreich auch seinen furchterregenden Begleiter: den Krampus. Diese zottelige Gestalt mit Hörnern, langer Zunge und rasselnden Ketten hat die Aufgabe, die unartigen Kinder zu erschrecken, während der Nikolaus die braven belohnt.
+Am Abend des 5. Dezember ziehen in vielen Orten, besonders in den westlichen Bundesländern, verkleidete Gestalten durch die Straßen. Bei diesen „Krampusläufen“ tragen die Männer kunstvoll geschnitzte Holzmasken und schwere Felle. Für Zuschauer ist es ein aufregendes, manchmal auch etwas beängstigendes Schauspiel, denn die Krampusse dürfen die Umstehenden durchaus ein wenig jagen.
+Der Brauch ist uralt und reicht vermutlich bis in vorchristliche Zeit zurück. Lange versuchte die Kirche, ihn zu verbieten, doch er überlebte. Heute wird über den Krampus diskutiert: Manche Eltern finden ihn zu brutal für kleine Kinder, andere verteidigen ihn als lebendiges Stück Tradition. Wer im Advent durch Österreich reist, sollte jedenfalls nicht erschrecken, wenn ihm plötzlich ein haariges Ungeheuer über den Weg läuft.`]
+];
+/* merge extra texts + Q&A from texts.js (optional second file) */
+if(typeof QA_BUILTIN!=='undefined') LIB.forEach(e=>{const q=QA_BUILTIN[e[0]]; if(q){e[2]=q.qa; e[3]=q.gist;}});
+if(typeof TEXTS_EXTRA!=='undefined') TEXTS_EXTRA.forEach(t=>LIB.push([t.title,t.text,t.qa,t.gist]));
+
+/* deck position: coverage counts only the words actually studied so far.
+   VOCAB is frequency-ordered, so "studied" ≈ the first N indexes. */
+let deckpos=JSON.parse(localStorage.getItem('gr_deckpos')||'{"base":400,"date":"2026-07-09","perDay":20,"set":false}');
+function studiedCount(){const d=Math.max(0,Math.floor((new Date()-new Date(deckpos.date+'T00:00:00'))/864e5));return Math.max(0,Math.min(VOCAB.length,deckpos.base+d*deckpos.perDay));}
+let SC=0, COV=[];
+function coverageOf(txt){let k=0,kf=0,t=0;txt.split(/([A-Za-zÄÖÜäöüß]+)/).forEach(p=>{if(/^[A-Za-zÄÖÜäöüß]+$/.test(p)&&p.length>1){t++;const li=lookup(p);if(li!==-1){kf++;if(li===-2||li<SC)k++;}}});return t?{now:Math.round(100*k/t),full:Math.round(100*kf/t)}:{now:0,full:0};}
+function recalc(){SC=studiedCount();COV=LIB.map(e=>coverageOf(e[1]));buildLib();}
+function buildLib(){
+  const sel=$('#lib');sel.innerHTML='<option value="">— library · '+LIB.length+' texts —</option>';
+  LIB.map((t,i)=>i).sort((a,b)=>COV[b].now-COV[a].now).forEach(i=>{
+    const o=document.createElement('option');o.value=i;o.textContent=LIB[i][0]+'  ·  '+COV[i].now+'%';sel.appendChild(o);
+  });
+}
+$('#lib').onchange=e=>{ if(e.target.value!=='') readText(+e.target.value); };
+function readText(i){ markSeen(i); const n=render(LIB[i][1]); renderExtras(i); countRead('t'+i,n); }
+function renderExtras(i){
+  const e=LIB[i], el=$('#extras');
+  if(!e||!e[2]||!e[2].length){el.innerHTML='';return;}
+  el.innerHTML=`<details><summary>Check yourself · ${e[2].length} questions</summary>`+
+    e[2].map(q=>`<div class="q">${q[0]}<details><summary>show answer</summary><div>${q[1]}</div></details></div>`).join('')+
+    (e[3]?`<details class="gist"><summary>English gist — check you got it</summary><div>${e[3]}</div></details>`:'')+`</details>`;
+}
+
+/* ---------- date-driven daily picker ---------- */
+const PH=[
+ {n:'Foundations',start:'2026-07-06',target:96,tip:'Comfortable texts — build reading speed and confidence.'},
+ {n:'Simple authentic',start:'2026-08-17',target:94,tip:'A little friction is the point — get the gist without stopping on every word.'},
+ {n:'Building up',start:'2026-10-05',target:92,tip:'Denser texts with real opinion and past-tense storytelling.'},
+ {n:'Vienna prep',start:'2026-11-16',target:89,tip:'Hard texts about the places and things from your actual trip.'}
+];
+const dstr=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function phaseFor(d){let p=PH[0];for(const x of PH){if(dstr(d)>=x.start)p=x;}return p;}
+function hashStr(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h);}
+let seen=JSON.parse(localStorage.getItem('gr_seen')||'{}');
+function markSeen(i){seen[i]=dstr(new Date());localStorage.setItem('gr_seen',JSON.stringify(seen));}
+
+function pickForToday(force){
+  const now=new Date(), ds=dstr(now), ph=phaseFor(now);
+  const store=JSON.parse(localStorage.getItem('gr_today')||'{}');
+  if(!force && store.date===ds && store.i!=null && LIB[store.i]) return {i:store.i,ph};
+  let cand=LIB.map((e,i)=>i);
+  if(force&&store.i!=null) cand=cand.filter(i=>i!==store.i);
+  const fresh=cand.filter(i=>!seen[i]);
+  const pool0=fresh.length?fresh:cand;
+  /* nearest to the phase's coverage target — difficulty adapts to YOUR deck position */
+  const ranked=pool0.slice().sort((a,b)=>Math.abs(COV[a].now-ph.target)-Math.abs(COV[b].now-ph.target));
+  const pool=ranked.slice(0,Math.min(8,ranked.length));
+  const i=pool[hashStr(ds+(force?'x'+store.i:''))%pool.length];
+  localStorage.setItem('gr_today',JSON.stringify({date:ds,i}));
+  return {i,ph};
+}
+
+/* ---------- reading streak ---------- */
+let streak=JSON.parse(localStorage.getItem('gr_streak')||'{"cur":0,"best":0,"last":""}');
+/* one missed day is forgiven (streak freeze); two kills it */
+function effStreak(){const ds=dstr(new Date()),y1=dstr(new Date(Date.now()-864e5)),y2=dstr(new Date(Date.now()-2*864e5));return(streak.last===ds||streak.last===y1||streak.last===y2)?streak.cur:0;}
+function streakBadge(){const s=effStreak();return `<span class="tstreak">🔥 ${s} day${s===1?'':'s'}${streak.best>s?' · best '+streak.best:''}</span>`;}
+function markDone(){
+  const ds=dstr(new Date());
+  if(streak.last===ds){toast('Already counted today ✓');return;}
+  const y1=dstr(new Date(Date.now()-864e5)), y2=dstr(new Date(Date.now()-2*864e5));
+  const grace=streak.last===y2;
+  streak.cur=(streak.last===y1||grace)?streak.cur+1:1;
+  streak.best=Math.max(streak.best,streak.cur);streak.last=ds;
+  localStorage.setItem('gr_streak',JSON.stringify(streak));
+  renderToday();drawStats();toast(grace?'🧊 Freeze used — 🔥 '+streak.cur+' days, streak saved':'🔥 '+streak.cur+'-day streak — nice.');
+}
+
+function gotoTab(t){document.querySelectorAll('nav button,.tab').forEach(x=>x.classList.remove('on'));document.querySelector(`nav button[data-t=${t}]`).classList.add('on');$('#'+t).classList.add('on');}
+/* warm-up: the text's most frequent deck words you haven't studied yet */
+function warmup(i){
+  const got={},out=[];
+  LIB[i][1].split(/([A-Za-zÄÖÜäöüß]+)/).forEach(p=>{
+    if(/^[A-Za-zÄÖÜäöüß]+$/.test(p)&&p.length>1){const li=lookup(p);if(li>=SC&&!got[li]){got[li]=1;out.push(li);}}
+  });
+  return out.sort((a,b)=>a-b).slice(0,5);
+}
+function renderToday(force){
+  const {i,ph}=pickForToday(force), now=new Date();
+  const nice=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const days=Math.max(0,Math.round((new Date('2026-12-27')-now)/864e5));
+  const c=COV[i], wu=warmup(i);
+  const feel=c.now>=95?'should feel comfortable':c.now>=90?'solid practice':c.now>=85?'a stretch — good':'challenging — go slow';
+  $('#today').innerHTML=
+   `<div class="trow"><span class="tdate">${nice} · ${days} days to Vienna</span>${streakBadge()}</div>
+    <div class="tphase">You're in <b>${ph.n}</b> — ${ph.tip}<br>Deck position: ~${SC.toLocaleString()} / ${VOCAB.length.toLocaleString()} words studied · <a href="#" onclick="gotoTab('progress');return false">${deckpos.set?'adjust':'⚠ set yours'}</a></div>
+    <div class="tcard">
+      <div class="tt">${LIB[i][0]}</div>
+      <div class="tmeta"><b>${c.now}%</b> studied-vocab coverage · ${feel}${c.full>c.now+3?` <span style="color:var(--soft)">(→ ${c.full}% once your deck is done)</span>`:''}</div>
+      ${wu.length?`<div class="tphase" style="margin:0">Warm up — meet the hardest words before you read:</div>
+      <div class="warm">${wu.map(li=>`<span class="wchip"><b>${VOCAB[li][0]}</b> — ${(VOCAB[li][1]||'').split(';')[0].slice(0,40)}</span>`).join('')}</div>`:''}
+      <div class="tbtn" style="margin-top:12px">
+        <button class="act" onclick="readText(${i})">Read this ↓</button>
+        <button class="act" onclick="renderToday(true)">Give me another</button>
+        <button class="act" onclick="markDone()">✓ Done for today</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- helpers ---------- */
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1900);}
+function speak(w){try{const u=new SpeechSynthesisUtterance(w);u.lang='de-DE';const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith('de'));if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button,.tab').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); $('#'+b.dataset.t).classList.add('on');
+});
+
+/* ---------- plan ---------- */
+const PHASES=[
+["Phase 1 · Foundations (Jul 6 – Aug 16)","Anki daily (new cards on). Here: the A2 library texts until they feel easy, then re-read. Grammar tab: cases + verb position + separable verbs.",
+["Wk 1 · Jul 6","Wk 2 · Jul 13","Wk 3 · Jul 20","Wk 4 · Jul 27","Wk 5 · Aug 3","Wk 6 · Aug 10"]],
+["Phase 2 · Simple authentic German (Aug 17 – Oct 4)","Paste nachrichtenleicht.de (new texts every Friday) — aim for 90%+ coverage before reading. B1 library texts. Grammar: past tenses, werden, connectors.",
+["Wk 7 · Aug 17","Wk 8 · Aug 24","Wk 9 · Aug 31","Wk 10 · Sep 7","Wk 11 · Sep 14","Wk 12 · Sep 21","Wk 13 · Sep 28"]],
+["Phase 3 · Real news (Oct 5 – Nov 15)","Paste articles from DW.com, orf.at (Austrian!), or derstandard.at. Expect 85% coverage — that's the sweet spot. Grammar: Konjunktiv I, extended participles.",
+["Wk 14 · Oct 5","Wk 15 · Oct 12","Wk 16 · Oct 19","Wk 17 · Oct 26","Wk 18 · Nov 2","Wk 19 · Nov 9"]],
+["Phase 4 · Vienna prep (Nov 16 – Dec 20)","Read about your actual itinerary in German: Wikipedia articles on Schönbrunn, Stephansdom, Christkindlmarkt pages, restaurant menus online. Austrian vocab section. Fly ready.",
+["Wk 20 · Nov 16","Wk 21 · Nov 23","Wk 22 · Nov 30","Wk 23 · Dec 7","Wk 24 · Dec 14"]]
+];
+let plan=JSON.parse(localStorage.getItem('gr_plan')||'{}');
+function drawPlan(){
+  $('#phases').innerHTML=PHASES.map((p,pi)=>`<div class="phase"><h3>${p[0]}</h3><p>${p[1]}</p>`+
+    p[2].map((w,wi)=>{const k=pi+'_'+wi,c=plan[k]?'checked':'';
+      return `<div class="wk ${c?'done':''}"><input type="checkbox" id="${k}" ${c} onchange="tick('${k}')"><label for="${k}">${w} — 3 reading sessions + daily Anki</label></div>`;}).join('')+`</div>`).join('');
+  const total=PHASES.reduce((a,p)=>a+p[2].length,0), done=Object.values(plan).filter(Boolean).length;
+  $('#prog').innerHTML=`<b>${done}/${total}</b> weeks complete → Vienna, late December 2026`;
+}
+function tick(k){ plan[k]=!plan[k]; localStorage.setItem('gr_plan',JSON.stringify(plan)); drawPlan(); }
+/* ---------- read-aloud (offline TTS, sentence-highlighted) ---------- */
+let ttsOn=false, ttsSents=[], ttsI=0;
+function playText(){
+  if(ttsOn){stopText();return;}
+  ttsSents=[...document.querySelectorAll('#text .sent')].filter(s=>s.textContent.trim().length>1);
+  if(!ttsSents.length)return;
+  ttsOn=true; ttsI=0; const p=$('#play'); if(p)p.textContent='⏹ Stop'; speakNext();
+}
+function speakNext(){
+  if(!ttsOn||ttsI>=ttsSents.length){stopText();return;}
+  document.querySelectorAll('#text .sent.hl').forEach(x=>x.classList.remove('hl'));
+  const s=ttsSents[ttsI]; s.classList.add('hl'); s.scrollIntoView({block:'center',behavior:'smooth'});
+  const u=new SpeechSynthesisUtterance(s.textContent); u.lang='de-DE'; u.rate=.92;
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith('de')); if(v)u.voice=v;
+  u.onend=()=>{ttsI++;speakNext();}; u.onerror=()=>{ttsI++;speakNext();};
+  speechSynthesis.speak(u);
+}
+function stopText(){ttsOn=false; try{speechSynthesis.cancel();}catch(e){} document.querySelectorAll('#text .sent.hl').forEach(x=>x.classList.remove('hl')); const p=$('#play'); if(p)p.textContent='🔊 Read aloud';}
+
+/* ---------- progress / stats ---------- */
+function drawStats(){
+  const el=$('#stats'); if(!el)return;
+  const deckSeen=Object.keys(stats.deckSeen||{}).length;
+  const pct=VOCAB.length?Math.round(100*deckSeen/VOCAB.length):0;
+  const textsRead=Object.keys(seen).length;
+  const es=effStreak();
+  el.innerHTML=`
+   <div class="scards">
+     <div class="sc"><div class="sn">${es}</div><div class="sl">day streak${streak.best>es?' · best '+streak.best:''}</div></div>
+     <div class="sc"><div class="sn">${textsRead}</div><div class="sl">texts read</div></div>
+     <div class="sc"><div class="sn">${(stats.wordsRead||0).toLocaleString()}</div><div class="sl">words read</div></div>
+   </div>
+   <div class="deckbar dp">
+     <div class="dbtop"><b>Deck position</b> — drives every coverage number and the daily pick<span>~${SC.toLocaleString()} studied</span></div>
+     <div style="margin:8px 0 2px"><label>words studied so far</label> <input id="dpb" type="number" min="0" max="${VOCAB.length}" value="${SC}"> &nbsp;<label>new cards/day</label> <input id="dpr" type="number" min="0" max="60" value="${deckpos.perDay}"> <button class="act" onclick="saveDp()">Save</button></div>
+     <div class="dbnote">Set this to roughly how many cards you've introduced in Anki (Stats → total cards seen). It auto-advances daily at your new-cards/day rate, so you only need to correct it occasionally.</div>
+   </div>
+   <div class="deckbar">
+     <div class="dbtop"><b>${deckSeen.toLocaleString()}</b> of your ${VOCAB.length.toLocaleString()} Anki words met in real reading<span>${pct}%</span></div>
+     <div class="dbtrack"><div class="dbfill" style="width:${pct}%"></div></div>
+     <div class="dbnote">The number that matters most. A word you've met in context — not just drilled on a card — is one you can actually read. Watch it climb as your deck and your reading compound.</div>
+   </div>
+   <div class="backup">
+     <button class="act" onclick="backup()">⬇ Back up progress</button>
+     <label class="act" style="cursor:pointer">⬆ Restore<input type="file" accept="application/json" onchange="restore(event)" hidden></label>
+     <small class="note">Progress lives only in this browser. Back up before clearing history or switching computers.</small>
+   </div>`;
+}
+function saveDp(){
+  deckpos={base:Math.max(0,+$('#dpb').value||0),date:dstr(new Date()),perDay:Math.max(0,+$('#dpr').value||0),set:true};
+  localStorage.setItem('gr_deckpos',JSON.stringify(deckpos));
+  recalc(); renderToday(); drawStats(); toast('Deck position saved — coverage recalculated');
+}
+function backup(){
+  const d={}; ['gr_saved','gr_seen','gr_today','gr_streak','gr_plan','gr_stats','gr_deckpos'].forEach(k=>{const v=localStorage.getItem(k); if(v!=null)d[k]=v;});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));
+  a.download='lesen-backup.json'; a.click(); toast('Backup downloaded');
+}
+function restore(ev){
+  const f=ev.target.files[0]; if(!f)return; const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result); Object.entries(d).forEach(([k,v])=>{if(typeof v==='string')localStorage.setItem(k,v);}); toast('Restored — reloading…'); setTimeout(()=>location.reload(),800);}catch(e){toast('Could not read that file');}};
+  r.readAsText(f);
+}
+
+recalc(); drawPlan(); drawList(); renderToday(); drawStats();
+</script>
+</body>
+</html>
