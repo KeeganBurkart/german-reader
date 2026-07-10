@@ -248,6 +248,7 @@ small.note{color:var(--soft)}
 
 <script src="vocab.js"></script>
 <script src="texts.js"></script>
+<script src="known.js"></script>
 <script>
 /* ---------- word index ---------- */
 const IDX = new Map();
@@ -316,7 +317,7 @@ function render(txt){
         const i=lookup(part), s=document.createElement('span');
         s.textContent=part; s.className='w'; s.dataset.i=i; s.dataset.tok=part;
         if(i===-1) s.classList.add('unk');
-        else if(i>=0&&i>=SC){ soon++; s.classList.add('soon'); stats.deckSeen[i]=1; }
+        else if(i>=0&&!isStud(i)){ soon++; s.classList.add('soon'); stats.deckSeen[i]=1; }
         else { known++; if(i>=0) stats.deckSeen[i]=1; }
         if(saved[part.toLowerCase()]) s.classList.add('saved');
         box.appendChild(s);
@@ -474,11 +475,19 @@ if(typeof TEXTS_EXTRA!=='undefined') TEXTS_EXTRA.forEach(t=>LIB.push([t.title,t.
 
 /* deck position: coverage counts only the words actually studied so far.
    VOCAB is frequency-ordered, so "studied" ≈ the first N indexes. */
-let deckpos=JSON.parse(localStorage.getItem('gr_deckpos')||'{"base":400,"date":"2026-07-09","perDay":20,"set":false}');
+let deckpos=JSON.parse(localStorage.getItem('gr_deckpos')||'{"base":44,"date":"2026-07-09","perDay":11,"set":false}');
 function studiedCount(){const d=Math.max(0,Math.floor((new Date()-new Date(deckpos.date+'T00:00:00'))/864e5));return Math.max(0,Math.min(VOCAB.length,deckpos.base+d*deckpos.perDay));}
+/* exact mode: known.js (from sync_anki.py) lists the words actually introduced in Anki —
+   beats the first-N model because Anki may serve cards out of frequency order */
+let KNOWNSET=null;
+if(typeof KNOWN_WORDS!=='undefined'){
+  const byWord={}; VOCAB.forEach((v,i)=>{byWord[v[0]]=i;});
+  KNOWNSET=new Set(); KNOWN_WORDS.forEach(w=>{if(byWord[w]!=null)KNOWNSET.add(byWord[w]);});
+}
+function isStud(li){return KNOWNSET?KNOWNSET.has(li):li<SC;}
 let SC=0, COV=[];
-function coverageOf(txt){let k=0,kf=0,t=0;txt.split(/([A-Za-zÄÖÜäöüß]+)/).forEach(p=>{if(/^[A-Za-zÄÖÜäöüß]+$/.test(p)&&p.length>1){t++;const li=lookup(p);if(li!==-1){kf++;if(li===-2||li<SC)k++;}}});return t?{now:Math.round(100*k/t),full:Math.round(100*kf/t)}:{now:0,full:0};}
-function recalc(){SC=studiedCount();COV=LIB.map(e=>coverageOf(e[1]));buildLib();}
+function coverageOf(txt){let k=0,kf=0,t=0;txt.split(/([A-Za-zÄÖÜäöüß]+)/).forEach(p=>{if(/^[A-Za-zÄÖÜäöüß]+$/.test(p)&&p.length>1){t++;const li=lookup(p);if(li!==-1){kf++;if(li===-2||isStud(li))k++;}}});return t?{now:Math.round(100*k/t),full:Math.round(100*kf/t)}:{now:0,full:0};}
+function recalc(){SC=KNOWNSET?KNOWNSET.size:studiedCount();COV=LIB.map(e=>coverageOf(e[1]));buildLib();}
 function buildLib(){
   const sel=$('#lib');sel.innerHTML='<option value="">— library · '+LIB.length+' texts —</option>';
   LIB.map((t,i)=>i).sort((a,b)=>COV[b].now-COV[a].now).forEach(i=>{
@@ -545,7 +554,7 @@ function gotoTab(t){document.querySelectorAll('nav button,.tab').forEach(x=>x.cl
 function warmup(i){
   const got={},out=[];
   LIB[i][1].split(/([A-Za-zÄÖÜäöüß]+)/).forEach(p=>{
-    if(/^[A-Za-zÄÖÜäöüß]+$/.test(p)&&p.length>1){const li=lookup(p);if(li>=SC&&!got[li]){got[li]=1;out.push(li);}}
+    if(/^[A-Za-zÄÖÜäöüß]+$/.test(p)&&p.length>1){const li=lookup(p);if(li>=0&&!isStud(li)&&!got[li]){got[li]=1;out.push(li);}}
   });
   return out.sort((a,b)=>a-b).slice(0,5);
 }
@@ -554,10 +563,10 @@ function renderToday(force){
   const nice=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   const days=Math.max(0,Math.round((new Date('2026-12-27')-now)/864e5));
   const c=COV[i], wu=warmup(i);
-  const feel=c.now>=95?'should feel comfortable':c.now>=90?'solid practice':c.now>=85?'a stretch — good':'challenging — go slow';
+  const feel=c.now>=95?'should feel comfortable':c.now>=90?'solid practice':c.now>=85?'a stretch — good':c.now>=70?'challenging — go slow':'decode mode: click glosses freely, understanding beats finishing — totally normal at your deck position';
   $('#today').innerHTML=
    `<div class="trow"><span class="tdate">${nice} · ${days} days to Vienna</span>${streakBadge()}</div>
-    <div class="tphase">You're in <b>${ph.n}</b> — ${ph.tip}<br>Deck position: ~${SC.toLocaleString()} / ${VOCAB.length.toLocaleString()} words studied · <a href="#" onclick="gotoTab('progress');return false">${deckpos.set?'adjust':'⚠ set yours'}</a></div>
+    <div class="tphase">You're in <b>${ph.n}</b> — ${ph.tip}<br>Deck position: ${KNOWNSET?'':'~'}${SC.toLocaleString()} / ${VOCAB.length.toLocaleString()} words studied${KNOWNSET?' · synced from Anki '+(typeof KNOWN_META!=='undefined'?KNOWN_META.date:''):' · <a href="#" onclick="gotoTab(\'progress\');return false">⚠ set yours</a>'}</div>
     <div class="tcard">
       <div class="tt">${LIB[i][0]}</div>
       <div class="tmeta"><b>${c.now}%</b> studied-vocab coverage · ${feel}${c.full>c.now+3?` <span style="color:var(--soft)">(→ ${c.full}% once your deck is done)</span>`:''}</div>
@@ -634,9 +643,10 @@ function drawStats(){
      <div class="sc"><div class="sn">${(stats.wordsRead||0).toLocaleString()}</div><div class="sl">words read</div></div>
    </div>
    <div class="deckbar dp">
-     <div class="dbtop"><b>Deck position</b> — drives every coverage number and the daily pick<span>~${SC.toLocaleString()} studied</span></div>
-     <div style="margin:8px 0 2px"><label>words studied so far</label> <input id="dpb" type="number" min="0" max="${VOCAB.length}" value="${SC}"> &nbsp;<label>new cards/day</label> <input id="dpr" type="number" min="0" max="60" value="${deckpos.perDay}"> <button class="act" onclick="saveDp()">Save</button></div>
-     <div class="dbnote">Set this to roughly how many cards you've introduced in Anki (Stats → total cards seen). It auto-advances daily at your new-cards/day rate, so you only need to correct it occasionally.</div>
+     <div class="dbtop"><b>Deck position</b> — drives every coverage number and the daily pick<span>${SC.toLocaleString()} studied</span></div>
+     ${KNOWNSET?`<div class="dbnote">✓ Exact mode: synced from your real Anki collection${typeof KNOWN_META!=='undefined'?' on '+KNOWN_META.date+' ('+KNOWN_META.count+' words, ~'+KNOWN_META.perDay+'/day pace)':''}. To refresh: run <code>python3 sync_anki.py</code> in the app folder, then reload.</div>`:
+     `<div style="margin:8px 0 2px"><label>words studied so far</label> <input id="dpb" type="number" min="0" max="${VOCAB.length}" value="${SC}"> &nbsp;<label>new cards/day</label> <input id="dpr" type="number" min="0" max="60" value="${deckpos.perDay}"> <button class="act" onclick="saveDp()">Save</button></div>
+     <div class="dbnote">Set this to roughly how many cards you've introduced in Anki (Stats → total cards seen). It auto-advances daily at your new-cards/day rate. Or run <code>python3 sync_anki.py</code> for exact per-word sync.</div>`}
    </div>
    <div class="deckbar">
      <div class="dbtop"><b>${deckSeen.toLocaleString()}</b> of your ${VOCAB.length.toLocaleString()} Anki words met in real reading<span>${pct}%</span></div>
