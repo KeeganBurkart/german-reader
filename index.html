@@ -16,6 +16,37 @@ nav button{border:0;background:none;font:inherit;padding:6px 14px;border-radius:
 nav button.on{background:var(--ink);color:var(--bg)}
 main{max-width:860px;margin:0 auto;padding:24px}
 .tab{display:none}.tab.on{display:block}
+/* flow */
+.flowtop{display:flex;align-items:flex-start;gap:24px;margin:4px 0 22px}
+.flowintro{max-width:560px}
+.flowintro h2{font:600 clamp(28px,5vw,46px)/1.05 Georgia,serif;letter-spacing:-1.2px;margin-bottom:8px}
+.flowintro p{color:var(--soft);max-width:520px}
+.flowstatus{margin-left:auto;text-align:right;font-size:13px;color:var(--soft);white-space:nowrap;padding-top:5px}
+.flowstatus b{display:block;color:var(--accent);font-size:20px;line-height:1.1}
+.flowpaper{background:var(--card);border-top:3px solid var(--accent);padding:28px 30px 24px;box-shadow:0 10px 34px rgba(80,56,32,.07);transition:opacity .18s ease,transform .18s ease}
+.flowpaper.changing{opacity:.15;transform:translateY(5px)}
+.floweyebrow{font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--soft);margin-bottom:5px}
+.flowtitle{font:600 27px/1.2 Georgia,serif;margin-bottom:16px}
+#flowtext{font:20px/2 Georgia,serif;white-space:pre-wrap}
+.flowmeta{display:flex;gap:16px;flex-wrap:wrap;color:var(--soft);font-size:13px;margin-top:18px;padding-top:13px;border-top:1px solid var(--line)}
+.flowmeta b{color:var(--ink)}
+.flowactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.flowactions .primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.flowreveal{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+.flowreveal[hidden]{display:none}
+.flowreveal h3{font-size:15px;margin-bottom:5px}
+.flowreveal p{color:#3d372f}
+.flowexample{font:17px/1.6 Georgia,serif;margin-top:8px;padding-left:12px;border-left:2px solid var(--accent)}
+.flowchoices{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.flowchoices button{font:inherit;font-size:14px;padding:7px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer}
+.flowchoices button.ok{border-color:#587a57;background:#edf5eb;color:#315030}
+.flowchoices button.no{border-color:#ba806f;background:#fff0eb;color:#7e3424}
+.flowhint{font-size:13px;color:var(--soft);margin-top:12px}
+.flowhint .lu{background:var(--unk-bg);color:var(--unk-ink);padding:0 5px;border-radius:3px}
+.flowhint .ls{border-bottom:1px dashed #b08d4f}
+.decodeintro{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.decodeintro h2{font:600 27px/1.2 Georgia,serif;margin-bottom:4px}
+.decodeintro p{color:var(--soft)}
 /* reader */
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
 select,button.act{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer}
@@ -31,7 +62,6 @@ textarea{width:100%;height:130px;font:inherit;padding:12px;border:1px solid var(
 .w:hover{background:#eee5d6}
 .unk{background:var(--unk-bg);color:var(--unk-ink)}
 .soon{border-bottom:1px dashed #b08d4f}
-.saved{border-bottom:2px solid var(--accent)}
 #legend{font-size:12px;color:var(--soft)}
 #legend .lu{background:var(--unk-bg);color:var(--unk-ink);padding:0 5px;border-radius:3px}
 #legend .ls{border-bottom:1px dashed #b08d4f}
@@ -76,12 +106,6 @@ textarea{width:100%;height:130px;font:inherit;padding:12px;border:1px solid var(
 #more[open]>summary::before{content:"− "}
 #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:22px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:20}
 #toast.show{opacity:1}
-/* word list */
-#list{margin-top:20px}
-#list table{width:100%;border-collapse:collapse;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:10px}
-#list td{padding:6px 12px;border-top:1px solid var(--line)}
-#list td:last-child{text-align:right}
-#list .x{cursor:pointer;color:var(--soft)}
 /* grammar */
 details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:0 18px}
 summary{cursor:pointer;padding:13px 0;font-weight:600}
@@ -112,13 +136,29 @@ small.note{color:var(--soft)}
 .dbfill{height:100%;background:var(--accent);border-radius:6px;transition:width .4s}
 .dbnote{font-size:13px;color:var(--soft);margin-top:9px}
 .backup{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+@media(max-width:680px){
+  header{display:block;padding:14px 16px 8px;overflow:hidden}
+  h1{margin-bottom:8px}
+  nav{margin:0;overflow-x:auto;padding-bottom:6px}
+  nav button{padding:6px 11px;white-space:nowrap}
+  main{padding:18px 15px}
+  .flowtop{display:block;margin-top:0}
+  .flowstatus{text-align:left;margin:12px 0 0}
+  .flowstatus b{display:inline;margin-right:5px}
+  .flowpaper{padding:22px 18px 20px}
+  #flowtext{font-size:19px;line-height:1.9}
+  #text{padding:18px;font-size:17px}
+  .trow{align-items:flex-start}.tstreak{margin-left:0}
+}
+@media(prefers-reduced-motion:reduce){.flowpaper{transition:none}.sent.hl{scroll-behavior:auto}}
 </style>
 </head>
 <body>
 <header>
   <h1>Lesen<span>.</span> <small style="font-weight:400;color:var(--soft)">Wien · Dez 2026</small></h1>
   <nav>
-    <button class="on" data-t="reader">Reader</button>
+    <button class="on" data-t="flow">Flow</button>
+    <button data-t="reader">Decode</button>
     <button data-t="grammar">Grammar</button>
     <button data-t="plan">Plan</button>
     <button data-t="progress">Progress</button>
@@ -126,7 +166,36 @@ small.note{color:var(--soft)}
 </header>
 <main>
 
-<section id="reader" class="tab on">
+<section id="flow" class="tab on">
+  <div class="flowtop">
+    <div class="flowintro">
+      <h2>Easy German, after Anki.</h2>
+      <p>Short Vienna stories built around words you have already met. Tap freely; nothing here creates another review queue.</p>
+    </div>
+    <div class="flowstatus" id="flowstatus"></div>
+  </div>
+  <article class="flowpaper" id="flowpaper">
+    <div class="floweyebrow" id="floweyebrow"></div>
+    <h2 class="flowtitle" id="flowtitle"></h2>
+    <div id="flowtext"></div>
+    <div class="flowmeta" id="flowmeta"></div>
+    <div class="flowactions">
+      <button class="act primary" onclick="nextFlow()">Next reading</button>
+      <button class="act" id="flowplay" onclick="playFlow()">🔊 Listen</button>
+      <button class="act" onclick="toggleFlow('flowquestion')">Check the gist</button>
+      <button class="act" onclick="toggleFlow('flowgrammar')">See one pattern</button>
+    </div>
+    <div class="flowreveal" id="flowquestion" hidden></div>
+    <div class="flowreveal" id="flowgrammar" hidden></div>
+  </article>
+  <div class="flowhint"><span class="lu">highlight</span> = tap for help · <span class="ls">dashed</span> = currently consolidating in Anki</div>
+</section>
+
+<section id="reader" class="tab">
+  <div class="decodeintro">
+    <h2>Decode</h2>
+    <p>Longer A2–B2 texts for deliberate, assisted reading. These are challenges, not your easy daily flow.</p>
+  </div>
   <div id="today"></div>
   <details id="more">
     <summary>Read something else — pick from the library or paste your own</summary>
@@ -139,7 +208,6 @@ small.note{color:var(--soft)}
   <div class="bar" id="covbar"><button class="act" id="play" onclick="playText()">🔊 Read aloud</button><span id="legend"></span><span id="cov"></span></div>
   <div id="text"></div>
   <div id="extras"></div>
-  <div id="list"></div>
 </section>
 
 <section id="grammar" class="tab">
@@ -248,6 +316,7 @@ small.note{color:var(--soft)}
 
 <script src="vocab.js"></script>
 <script src="texts.js"></script>
+<script src="flow.js"></script>
 <script src="known.js"></script>
 <script>
 /* ---------- word index ---------- */
@@ -255,7 +324,7 @@ const IDX = new Map();
 function reg(form, i){ form=form.toLowerCase().trim(); if(form.length>1 && !IDX.has(form)) IDX.set(form,i); }
 VOCAB.forEach((v,i)=>{
   let w=v[0].replace(/^(der|die|das)\s+/i,'').replace(/\s*\(.*\)/,'');
-  w.split('/').forEach(p=>reg(p,i));
+  w.split(/[/,]/).forEach(p=>reg(p,i));
   reg(v[0],i);
   // forms field: "wird; wurde; ist geworden" or "die Frauen"
   (v[3]||'').split(/[;,]/).forEach(f=>{
@@ -265,6 +334,7 @@ VOCAB.forEach((v,i)=>{
 });
 /* function words not stored as standalone deck entries: known, no card (-2) */
 const STOP=new Set('der die das dem den des ein eine einen einem einer eines im am vom zum zur beim ans ins aufs übers unters durchs fürs hinterm überm unterm ich du er sie es wir ihr mich dich ihn uns euch mir dir ihm ihnen mein dein sein unser euer und oder aber denn dass daß wie wo wer was wen wem wessen'.split(' '));
+const IRREG={bin:'sein',bist:'sein',ist:'sein',sind:'sein',seid:'sein',habe:'haben',hast:'haben',hat:'haben',kann:'können',kannst:'können',könnt:'können',muss:'müssen',musst:'müssen',müsst:'müssen',will:'wollen',willst:'wollen',wollt:'wollen',weiß:'wissen',weißt:'wissen',gehe:'gehen',gehst:'gehen',geht:'gehen',komme:'kommen',kommst:'kommen',kommt:'kommen',sage:'sagen',sagst:'sagen',sagt:'sagen',gebe:'geben',gibst:'geben',gibt:'geben'};
 /* naive de-inflection: try progressively stripped forms */
 const ENDINGS=['ern','eren','sten','este','ster','stes','ten','tem','tes','ter','te','en','em','er','es','st','e','n','s','t'];
 function base(t){
@@ -289,8 +359,9 @@ function base(t){
 }
 function lookup(tok){
   const t=tok.toLowerCase();
-  if(STOP.has(t)) return -2;
+  if(IRREG[t]&&IDX.has(IRREG[t])) return IDX.get(IRREG[t]);
   const b=base(t); if(b>=0) return b;
+  if(STOP.has(t)) return -2;
   // compound: Stadtzentrum = Stadt + Zentrum; entlanggeht = entlang + geht
   if(t.length>=7) for(let c=3;c<=t.length-3;c++){
     let L=t.slice(0,c), R=t.slice(c);
@@ -303,7 +374,6 @@ function lookup(tok){
 
 /* ---------- reader ---------- */
 const $=s=>document.querySelector(s);
-let saved=JSON.parse(localStorage.getItem('gr_saved')||'{}');
 let stats=JSON.parse(localStorage.getItem('gr_stats')||'{}'); stats.deckSeen=stats.deckSeen||{};
 
 function render(txt){
@@ -311,15 +381,14 @@ function render(txt){
   const el=$('#text'); el.innerHTML=''; let known=0,soon=0,total=0;
   (txt.match(/[^.!?\n]+[.!?"”»«]*|\n+/g)||[txt]).forEach((sent,si)=>{
     const box=document.createElement('span'); box.className='sent'; box.dataset.k=si;
-    sent.split(/([A-Za-zÄÖÜäöüß]+)/).forEach(part=>{
-      if(/^[A-Za-zÄÖÜäöüß]+$/.test(part)&&part.length>1){
+    sent.split(/([A-Za-zÄÖÜäöüßÉé]+)/).forEach(part=>{
+      if(/^[A-Za-zÄÖÜäöüßÉé]+$/.test(part)&&part.length>1){
         total++;
         const i=lookup(part), s=document.createElement('span');
         s.textContent=part; s.className='w'; s.dataset.i=i; s.dataset.tok=part;
         if(i===-1) s.classList.add('unk');
-        else if(i>=0&&!isStud(i)){ soon++; s.classList.add('soon'); stats.deckSeen[i]=1; }
+        else if(i>=0&&!isTokenStud(part,i)){ soon++; s.classList.add('soon'); stats.deckSeen[i]=1; }
         else { known++; if(i>=0) stats.deckSeen[i]=1; }
-        if(saved[part.toLowerCase()]) s.classList.add('saved');
         box.appendChild(s);
       } else box.appendChild(document.createTextNode(part));
     });
@@ -342,16 +411,20 @@ function countRead(key,total){
 }
 function loadPaste(){ const t=$('#paste').value.trim(); if(!t)return; $('#extras').innerHTML=''; countRead('p'+hashStr(t.slice(0,200)),render(t)); }
 
-$('#text').addEventListener('click',e=>{
+document.addEventListener('click',e=>{
   const s=e.target.closest('.w'); if(!s) return;
   const i=+s.dataset.i, tok=s.dataset.tok, pop=$('#pop');
   let html;
   if(i>=0){ const v=VOCAB[i];
-    html=`<span class="hw">${v[0]}</span><span class="pos">${v[2]||''} · top ${v[5]*25}</span><div>${v[1]}</div>`+
+    const state=stateForToken(tok,i), stateLabel=state==='stable'?'stable in Anki':state==='learning'?'learning in Anki':state==='seen'?'recently introduced in Anki':'not introduced in Anki';
+    html=`<span class="hw">${v[0]}</span><span class="pos">${v[2]||''} · ${stateLabel}</span><div>${v[1]}</div>`+
       (v[3]?`<div class="pos">${v[3]}</div>`:'')+(v[4]?`<div class="ex">${v[4]}</div>`:'');
-  } else html=`<span class="hw">${tok}</span><div class="pos">${i===-2?'function word (article / pronoun / conjunction)':'not in your deck'}</div>`;
+  } else {
+    const gloss=s.dataset.gloss||FLOW_GLOSSES[tok.toLowerCase()]||'';
+    html=`<span class="hw">${tok}</span><div class="pos">${i===-2?'function word':'not yet in your deck'}</div>${gloss?`<div>${gloss}</div>`:''}`;
+  }
   const esc=tok.replace(/'/g,"\\'");
-  html+=`<button onclick="save('${esc}',${i})">＋ save</button> <button onclick="speak('${esc}')">🔊 hear</button>`;
+  html+=`<button onclick="speak('${esc}')">🔊 hear</button>`;
   const sentTxt=(s.closest('.sent')||{}).textContent;
   if(sentTxt&&sentTxt.trim().length>3) html+=` <button onclick="window.open('https://translate.google.com/?sl=de&tl=en&text='+encodeURIComponent(this.dataset.s),'_blank')" data-s="${sentTxt.trim().replace(/"/g,'&quot;')}">↗ sentence</button>`;
   pop.innerHTML=html; pop.style.display='block';
@@ -360,24 +433,6 @@ $('#text').addEventListener('click',e=>{
   pop.style.top=(r.bottom+8)+'px';
 });
 document.addEventListener('click',e=>{ if(!e.target.closest('.w')&&!e.target.closest('#pop')) $('#pop').style.display='none'; });
-
-function save(tok,i){
-  saved[tok.toLowerCase()]={w:i>=0?VOCAB[i][0]:tok, g:i>=0?VOCAB[i][1]:''};
-  localStorage.setItem('gr_saved',JSON.stringify(saved));
-  document.querySelectorAll('.w').forEach(s=>{ if(s.dataset.tok.toLowerCase()===tok.toLowerCase()) s.classList.add('saved'); });
-  $('#pop').style.display='none'; drawList();
-}
-function unsave(k){ delete saved[k]; localStorage.setItem('gr_saved',JSON.stringify(saved)); drawList(); }
-function drawList(){
-  const ks=Object.keys(saved), el=$('#list');
-  if(!ks.length){ el.innerHTML=''; return; }
-  el.innerHTML=`<div class="bar"><b>Word list (${ks.length})</b><button class="act" onclick="copyTSV()">Copy as Anki TSV</button></div>
-  <table>${ks.map(k=>`<tr><td><b>${saved[k].w}</b></td><td>${saved[k].g||'<i>look up & fill in</i>'}</td><td class="x" onclick="unsave('${k}')">✕</td></tr>`).join('')}</table>`;
-}
-function copyTSV(){
-  navigator.clipboard.writeText(Object.values(saved).map(v=>v.w+'\t'+v.g).join('\n'));
-  alert('Copied — in Anki: File → Import, fields separated by Tab.');
-}
 
 /* ---------- library ---------- */
 const LIB=[
@@ -480,14 +535,40 @@ function studiedCount(){const d=Math.max(0,Math.floor((new Date()-new Date(deckp
 /* exact mode: known.js (from sync_anki.py) lists the words actually introduced in Anki —
    beats the first-N model because Anki may serve cards out of frequency order */
 let KNOWNSET=null;
+const ANKISTATE=new Map(), ANKI_FORM_STATE=new Map(), STATE_RANK={seen:1,learning:2,stable:3};
 if(typeof KNOWN_WORDS!=='undefined'){
-  const byWord={}; VOCAB.forEach((v,i)=>{byWord[v[0]]=i;});
-  KNOWNSET=new Set(); KNOWN_WORDS.forEach(w=>{if(byWord[w]!=null)KNOWNSET.add(byWord[w]);});
+  const byWord={}; VOCAB.forEach((v,i)=>(byWord[v[0]]||(byWord[v[0]]=[])).push(i));
+  KNOWNSET=new Set(); KNOWN_WORDS.forEach(w=>(byWord[w]||[]).forEach(i=>KNOWNSET.add(i)));
+  if(typeof ANKI_WORDS!=='undefined') ANKI_WORDS.forEach(entry=>(byWord[entry.word]||[]).forEach(i=>{
+    const old=ANKISTATE.get(i);
+    if(!old||STATE_RANK[entry.state]>STATE_RANK[old]) ANKISTATE.set(i,entry.state);
+  }));
+  if(typeof ANKI_WORDS!=='undefined') ANKI_WORDS.forEach(entry=>{
+    (entry.word.toLowerCase().match(/[a-zäöüßé]+/g)||[]).forEach(form=>{
+      const old=ANKI_FORM_STATE.get(form);
+      if(!old||STATE_RANK[entry.state]>STATE_RANK[old]) ANKI_FORM_STATE.set(form,entry.state);
+    });
+  });
 }
 function isStud(li){return KNOWNSET?KNOWNSET.has(li):li<SC;}
-let SC=0, COV=[];
-function coverageOf(txt){let k=0,kf=0,t=0;txt.split(/([A-Za-zÄÖÜäöüß]+)/).forEach(p=>{if(/^[A-Za-zÄÖÜäöüß]+$/.test(p)&&p.length>1){t++;const li=lookup(p);if(li!==-1){kf++;if(li===-2||isStud(li))k++;}}});return t?{now:Math.round(100*k/t),full:Math.round(100*kf/t)}:{now:0,full:0};}
-function recalc(){SC=KNOWNSET?KNOWNSET.size:studiedCount();COV=LIB.map(e=>coverageOf(e[1]));buildLib();}
+function stateForIndex(li){return ANKISTATE.get(li)||(isStud(li)?'seen':'unseen');}
+function stateForToken(tok,li){return ANKI_FORM_STATE.get(tok.toLowerCase())||(li>=0?stateForIndex(li):'unseen');}
+function isTokenStud(tok,li){return stateForToken(tok,li)!=='unseen';}
+let SC=0, COV=[], FLOW_COV=[];
+function coverageOf(txt){let k=0,kf=0,t=0;txt.split(/([A-Za-zÄÖÜäöüßÉé]+)/).forEach(p=>{if(/^[A-Za-zÄÖÜäöüßÉé]+$/.test(p)&&p.length>1){t++;const li=lookup(p);if(li!==-1){kf++;if(li===-2||isTokenStud(p,li))k++;}}});return t?{now:Math.round(100*k/t),full:Math.round(100*kf/t)}:{now:0,full:0};}
+const FLOW_SUPPORT=new Set('wien salzburg österreich keegan euro hotel café museum restaurant'.split(' '));
+function flowCoverage(txt){
+  let familiar=0,stable=0,young=0,total=0;const unknown=new Set();
+  txt.split(/([A-Za-zÄÖÜäöüßÉé]+)/).forEach(p=>{
+    if(!/^[A-Za-zÄÖÜäöüßÉé]+$/.test(p)||p.length<=1)return;
+    total++;const low=p.toLowerCase(),li=lookup(p);
+    if(FLOW_SUPPORT.has(low)||li===-2){familiar++;stable++;return;}
+    if((li>=0&&isTokenStud(p,li))||ANKI_FORM_STATE.has(low)){familiar++;const state=stateForToken(p,li);if(state==='stable')stable++;else young++;return;}
+    unknown.add(low);
+  });
+  return {familiar:total?Math.round(100*familiar/total):0,stable:total?Math.round(100*stable/total):0,young,total,unknown:[...unknown]};
+}
+function recalc(){SC=KNOWNSET?(typeof KNOWN_META!=='undefined'?KNOWN_META.count:KNOWNSET.size):studiedCount();COV=LIB.map(e=>coverageOf(e[1]));FLOW_COV=FLOW_TEXTS.map(e=>flowCoverage(e.text));buildLib();}
 function buildLib(){
   const sel=$('#lib');sel.innerHTML='<option value="">— library · '+LIB.length+' texts —</option>';
   LIB.map((t,i)=>i).sort((a,b)=>COV[b].now-COV[a].now).forEach(i=>{
@@ -504,12 +585,70 @@ function renderExtras(i){
     (e[3]?`<details class="gist"><summary>English gist — check you got it</summary><div>${e[3]}</div></details>`:'')+`</details>`;
 }
 
+/* ---------- flow ---------- */
+let flowSeen=JSON.parse(localStorage.getItem('gr_flow_seen')||'{}'), flowCurrent=null, flowVoice=null;
+function pickFlow(){
+  const ranked=FLOW_TEXTS.map((t,i)=>({i,reads:flowSeen[t.id]||0,c:FLOW_COV[i]}))
+    .sort((a,b)=>a.reads-b.reads||b.c.familiar-a.c.familiar||a.i-b.i);
+  return ranked[0].i;
+}
+function renderFlow(i){
+  flowCurrent=i;const item=FLOW_TEXTS[i],metric=FLOW_COV[i],paper=$('#flowpaper');
+  paper.classList.add('changing');
+  setTimeout(()=>{
+    $('#floweyebrow').textContent=`Easy reading · ${metric.familiar}% supported`;
+    $('#flowtitle').textContent=item.title;
+    const el=$('#flowtext');el.innerHTML='';
+    (item.text.match(/[^.!?\n]+[.!?"\u201d»«]*|\n+/g)||[item.text]).forEach((sent,si)=>{
+      const box=document.createElement('span');box.className='sent';box.dataset.k=si;
+      sent.split(/([A-Za-zÄÖÜäöüßÉé]+)/).forEach(part=>{
+        if(/^[A-Za-zÄÖÜäöüßÉé]+$/.test(part)&&part.length>1){
+          const low=part.toLowerCase(),li=lookup(part),s=document.createElement('span');
+          s.textContent=part;s.className='w';s.dataset.i=li;s.dataset.tok=part;
+          if(item.glosses&&item.glosses[low])s.dataset.gloss=item.glosses[low];
+          if((li>=0&&isTokenStud(part,li))||ANKI_FORM_STATE.has(low)){if(stateForToken(part,li)==='learning')s.classList.add('soon');}
+          else if(li!==-2&&!FLOW_SUPPORT.has(low))s.classList.add('unk');
+          box.appendChild(s);
+        }else box.appendChild(document.createTextNode(part));
+      });
+      el.appendChild(box);
+    });
+    $('#flowmeta').innerHTML=`<span><b>${metric.familiar}%</b> supported coverage</span><span><b>${metric.unknown.length}</b> help words</span><span><b>${metric.total}</b> running words</span>`;
+    $('#flowquestion').hidden=true;$('#flowgrammar').hidden=true;
+    $('#flowquestion').innerHTML=`<h3>${item.question.prompt}</h3><div class="flowchoices">${item.question.choices.map((c,n)=>`<button onclick="answerFlow(this,${n})">${c}</button>`).join('')}</div><p class="flowresult"></p>`;
+    $('#flowgrammar').innerHTML=`<h3>${item.grammar.title}</h3><p>${item.grammar.note}</p><div class="flowexample">${item.grammar.example}</div>`;
+    const meta=typeof KNOWN_META!=='undefined'?KNOWN_META:{};
+    $('#flowstatus').innerHTML=`<b>${SC.toLocaleString()} from Anki</b>${meta.learning||0} learning · ${meta.stable||0} stable<br>synced ${meta.date||'locally'}`;
+    paper.classList.remove('changing');
+  },120);
+}
+function nextFlow(){
+  if(flowCurrent!=null){
+    const item=FLOW_TEXTS[flowCurrent];flowSeen[item.id]=(flowSeen[item.id]||0)+1;
+    localStorage.setItem('gr_flow_seen',JSON.stringify(flowSeen));countRead('f'+item.id,FLOW_COV[flowCurrent].total);
+  }
+  renderFlow(pickFlow());
+}
+function toggleFlow(id){const el=$('#'+id);el.hidden=!el.hidden;if(!el.hidden)el.animate([{opacity:0,transform:'translateY(-4px)'},{opacity:1,transform:'translateY(0)'}],{duration:160,easing:'ease-out'});}
+function answerFlow(button,n){
+  const box=button.parentElement,answer=FLOW_TEXTS[flowCurrent].question.answer;
+  box.querySelectorAll('button').forEach((b,i)=>{b.classList.remove('ok','no');if(i===answer)b.classList.add('ok');});
+  if(n!==answer)button.classList.add('no');
+  button.closest('.flowreveal').querySelector('.flowresult').textContent=n===answer?`Yes. ${FLOW_TEXTS[flowCurrent].gist}`:'Take another look at the text; the helpful words can stay open.';
+}
+function playFlow(){
+  if(flowVoice){speechSynthesis.cancel();flowVoice=null;$('#flowplay').textContent='🔊 Listen';return;}
+  const u=new SpeechSynthesisUtterance(FLOW_TEXTS[flowCurrent].text);u.lang='de-DE';u.rate=.88;
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith('de'));if(v)u.voice=v;
+  flowVoice=u;$('#flowplay').textContent='⏹ Stop';u.onend=u.onerror=()=>{flowVoice=null;$('#flowplay').textContent='🔊 Listen';};speechSynthesis.speak(u);
+}
+
 /* ---------- date-driven daily picker ---------- */
 const PH=[
- {n:'Foundations',start:'2026-07-06',target:96,tip:'Comfortable texts — build reading speed and confidence.'},
- {n:'Simple authentic',start:'2026-08-17',target:94,tip:'A little friction is the point — get the gist without stopping on every word.'},
- {n:'Building up',start:'2026-10-05',target:92,tip:'Denser texts with real opinion and past-tense storytelling.'},
- {n:'Vienna prep',start:'2026-11-16',target:89,tip:'Hard texts about the places and things from your actual trip.'}
+ {n:'Foundations',start:'2026-07-06',target:96,tip:'Assisted decoding. Use Flow when you want comfortable reading.'},
+ {n:'Simple authentic',start:'2026-08-17',target:94,tip:'Read for the gist and open help whenever meaning breaks.'},
+ {n:'Building up',start:'2026-10-05',target:92,tip:'Denser texts with opinion and past-tense storytelling.'},
+ {n:'Vienna prep',start:'2026-11-16',target:89,tip:'Deliberate challenges about places from your actual trip.'}
 ];
 const dstr=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function phaseFor(d){let p=PH[0];for(const x of PH){if(dstr(d)>=x.start)p=x;}return p;}
@@ -553,8 +692,8 @@ function gotoTab(t){document.querySelectorAll('nav button,.tab').forEach(x=>x.cl
 /* warm-up: the text's most frequent deck words you haven't studied yet */
 function warmup(i){
   const got={},out=[];
-  LIB[i][1].split(/([A-Za-zÄÖÜäöüß]+)/).forEach(p=>{
-    if(/^[A-Za-zÄÖÜäöüß]+$/.test(p)&&p.length>1){const li=lookup(p);if(li>=0&&!isStud(li)&&!got[li]){got[li]=1;out.push(li);}}
+  LIB[i][1].split(/([A-Za-zÄÖÜäöüßÉé]+)/).forEach(p=>{
+    if(/^[A-Za-zÄÖÜäöüßÉé]+$/.test(p)&&p.length>1){const li=lookup(p);if(li>=0&&!isTokenStud(p,li)&&!got[li]){got[li]=1;out.push(li);}}
   });
   return out.sort((a,b)=>a-b).slice(0,5);
 }
@@ -566,7 +705,7 @@ function renderToday(force){
   const feel=c.now>=95?'should feel comfortable':c.now>=90?'solid practice':c.now>=85?'a stretch — good':c.now>=70?'challenging — go slow':'decode mode: click glosses freely, understanding beats finishing — totally normal at your deck position';
   $('#today').innerHTML=
    `<div class="trow"><span class="tdate">${nice} · ${days} days to Vienna</span>${streakBadge()}</div>
-    <div class="tphase">You're in <b>${ph.n}</b> — ${ph.tip}<br>Deck position: ${KNOWNSET?'':'~'}${SC.toLocaleString()} / ${VOCAB.length.toLocaleString()} words studied${KNOWNSET?' · synced from Anki '+(typeof KNOWN_META!=='undefined'?KNOWN_META.date:''):' · <a href="#" onclick="gotoTab(\'progress\');return false">⚠ set yours</a>'}</div>
+    <div class="tphase"><b>${ph.n} decode band</b> — ${ph.tip}<br>Deck position: ${KNOWNSET?'':'~'}${SC.toLocaleString()} / ${VOCAB.length.toLocaleString()} words introduced${KNOWNSET?' · synced from Anki '+(typeof KNOWN_META!=='undefined'?KNOWN_META.date:''):' · <a href="#" onclick="gotoTab(\'progress\');return false">⚠ set yours</a>'}</div>
     <div class="tcard">
       <div class="tt">${LIB[i][0]}</div>
       <div class="tmeta"><b>${c.now}%</b> studied-vocab coverage · ${feel}${c.full>c.now+3?` <span style="color:var(--soft)">(→ ${c.full}% once your deck is done)</span>`:''}</div>
@@ -592,11 +731,11 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
 
 /* ---------- plan ---------- */
 const PHASES=[
-["Phase 1 · Foundations (Jul 6 – Aug 16)","Anki daily (new cards on). Here: the A2 library texts until they feel easy, then re-read. Grammar tab: cases + verb position + separable verbs.",
+["Phase 1 · Foundations (Jul 6 – Aug 16)","Anki daily. Use Flow for short, supported reading three or more times a week. Decode is an optional weekly challenge. Let contextual patterns lead; use the Grammar tab only when needed.",
 ["Wk 1 · Jul 6","Wk 2 · Jul 13","Wk 3 · Jul 20","Wk 4 · Jul 27","Wk 5 · Aug 3","Wk 6 · Aug 10"]],
-["Phase 2 · Simple authentic German (Aug 17 – Oct 4)","Paste nachrichtenleicht.de (new texts every Friday) — aim for 90%+ coverage before reading. B1 library texts. Grammar: past tenses, werden, connectors.",
+["Phase 2 · Simple authentic German (Aug 17 – Oct 4)","Keep Flow as the volume lane. Add short, predictable A1–A2 messages, menus, maps and guides; use Decode when coverage is high enough to preserve the gist.",
 ["Wk 7 · Aug 17","Wk 8 · Aug 24","Wk 9 · Aug 31","Wk 10 · Sep 7","Wk 11 · Sep 14","Wk 12 · Sep 21","Wk 13 · Sep 28"]],
-["Phase 3 · Real news (Oct 5 – Nov 15)","Paste articles from DW.com, orf.at (Austrian!), or derstandard.at. Expect 85% coverage — that's the sweet spot. Grammar: Konjunktiv I, extended participles.",
+["Phase 3 · Longer reading (Oct 5 – Nov 15)","Increase length before difficulty. Try simple news and ORF material with glosses, while keeping easier Flow readings for speed and automaticity.",
 ["Wk 14 · Oct 5","Wk 15 · Oct 12","Wk 16 · Oct 19","Wk 17 · Oct 26","Wk 18 · Nov 2","Wk 19 · Nov 9"]],
 ["Phase 4 · Vienna prep (Nov 16 – Dec 20)","Read about your actual itinerary in German: Wikipedia articles on Schönbrunn, Stephansdom, Christkindlmarkt pages, restaurant menus online. Austrian vocab section. Fly ready.",
 ["Wk 20 · Nov 16","Wk 21 · Nov 23","Wk 22 · Nov 30","Wk 23 · Dec 7","Wk 24 · Dec 14"]]
@@ -627,14 +766,14 @@ function speakNext(){
   u.onend=()=>{ttsI++;speakNext();}; u.onerror=()=>{ttsI++;speakNext();};
   speechSynthesis.speak(u);
 }
-function stopText(){ttsOn=false; try{speechSynthesis.cancel();}catch(e){} document.querySelectorAll('#text .sent.hl').forEach(x=>x.classList.remove('hl')); const p=$('#play'); if(p)p.textContent='🔊 Read aloud';}
+function stopText(){ttsOn=false;flowVoice=null;try{speechSynthesis.cancel();}catch(e){}document.querySelectorAll('#text .sent.hl').forEach(x=>x.classList.remove('hl'));const p=$('#play');if(p)p.textContent='🔊 Read aloud';const fp=$('#flowplay');if(fp)fp.textContent='🔊 Listen';}
 
 /* ---------- progress / stats ---------- */
 function drawStats(){
   const el=$('#stats'); if(!el)return;
   const deckSeen=Object.keys(stats.deckSeen||{}).length;
   const pct=VOCAB.length?Math.round(100*deckSeen/VOCAB.length):0;
-  const textsRead=Object.keys(seen).length;
+  const decodeRead=Object.keys(seen).length,flowRead=Object.keys(flowSeen).length,textsRead=decodeRead+flowRead;
   const es=effStreak();
   el.innerHTML=`
    <div class="scards">
@@ -643,8 +782,8 @@ function drawStats(){
      <div class="sc"><div class="sn">${(stats.wordsRead||0).toLocaleString()}</div><div class="sl">words read</div></div>
    </div>
    <div class="deckbar dp">
-     <div class="dbtop"><b>Deck position</b> — drives every coverage number and the daily pick<span>${SC.toLocaleString()} studied</span></div>
-     ${KNOWNSET?`<div class="dbnote">✓ Exact mode: synced from your real Anki collection${typeof KNOWN_META!=='undefined'?' on '+KNOWN_META.date+' ('+KNOWN_META.count+' words, ~'+KNOWN_META.perDay+'/day pace)':''}. To refresh: run <code>python3 sync_anki.py</code> in the app folder, then reload.</div>`:
+     <div class="dbtop"><b>Anki vocabulary</b> — Flow distinguishes recent, learning and stable words<span>${SC.toLocaleString()} introduced</span></div>
+     ${KNOWNSET?`<div class="dbnote">✓ One-way sync from your Anki collection${typeof KNOWN_META!=='undefined'?' on '+KNOWN_META.date+' ('+(KNOWN_META.seen||0)+' recent, '+(KNOWN_META.learning||0)+' learning, '+(KNOWN_META.stable||0)+' stable · ~'+KNOWN_META.perDay+'/day)':''}. To refresh: run <code>uv run sync_anki.py</code> in the app folder, then reload.</div>`:
      `<div style="margin:8px 0 2px"><label>words studied so far</label> <input id="dpb" type="number" min="0" max="${VOCAB.length}" value="${SC}"> &nbsp;<label>new cards/day</label> <input id="dpr" type="number" min="0" max="60" value="${deckpos.perDay}"> <button class="act" onclick="saveDp()">Save</button></div>
      <div class="dbnote">Set this to roughly how many cards you've introduced in Anki (Stats → total cards seen). It auto-advances daily at your new-cards/day rate. Or run <code>python3 sync_anki.py</code> for exact per-word sync.</div>`}
    </div>
@@ -665,7 +804,7 @@ function saveDp(){
   recalc(); renderToday(); drawStats(); toast('Deck position saved — coverage recalculated');
 }
 function backup(){
-  const d={}; ['gr_saved','gr_seen','gr_today','gr_streak','gr_plan','gr_stats','gr_deckpos'].forEach(k=>{const v=localStorage.getItem(k); if(v!=null)d[k]=v;});
+  const d={}; ['gr_flow_seen','gr_seen','gr_today','gr_streak','gr_plan','gr_stats','gr_deckpos'].forEach(k=>{const v=localStorage.getItem(k); if(v!=null)d[k]=v;});
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));
   a.download='lesen-backup.json'; a.click(); toast('Backup downloaded');
 }
@@ -675,7 +814,7 @@ function restore(ev){
   r.readAsText(f);
 }
 
-recalc(); drawPlan(); drawList(); renderToday(); drawStats();
+recalc();drawPlan();renderToday();drawStats();renderFlow(pickFlow());
 </script>
 </body>
 </html>
